@@ -56,7 +56,7 @@ int screenWidth = 1024;
 int screenHeight = 768;
 
 	/* command line flags */
-int flycontrol = 1;		// allow viewpoint to move in y axis when 1
+int flycontrol = 0;		// allow viewpoint to move in y axis when 1
 int displayAllCubes = 0;	// draw all of the cubes in the world when 1
 int testWorld = 0;		// sample world for timing tests
 int fps = 0;			// turn on frame per second output
@@ -78,7 +78,7 @@ float playerPosition[MOB_COUNT][4];
 short playerVisible[MOB_COUNT];
 
 	/* flag indicating the user wants the cube in front of them removed */
-int space = 0;
+int dig = 0;
         /* flag indicates if map is to be printed */
 int displayMap = 1;
 
@@ -609,70 +609,70 @@ static int lighton = 1;
          init();
          glutPostRedisplay();
          break;
-       case 'w':		// forward motion
-           if (strcmp(gameMode, "-client") != 0 && netClient != 1) {
-               oldvpx = vpx;
-               oldvpy = vpy;
-               oldvpz = vpz;
-               rotx = (mvx / 180.0 * 3.141592);
-               roty = (mvy / 180.0 * 3.141592);
-               vpx -= sin(roty) * 0.3;
-               // turn off y motion so you can't fly
-               if (flycontrol == 1)
-                   vpy += sin(rotx) * 0.3;
-               vpz += cos(roty) * 0.3;
-               collisionResponse();
-               glutPostRedisplay();
-           }
-           break;
-       case 's':		// backward motion
-           if (strcmp(gameMode, "-client") != 0 && netClient != 1) {
-               oldvpx = vpx;
-               oldvpy = vpy;
-               oldvpz = vpz;
-               rotx = (mvx / 180.0 * 3.141592);
-               roty = (mvy / 180.0 * 3.141592);
-               vpx += sin(roty) * 0.3;
-               // turn off y motion so you can't fly
-               if (flycontrol == 1)
-                   vpy -= sin(rotx) * 0.3;
-               vpz -= cos(roty) * 0.3;
-               collisionResponse();
-               glutPostRedisplay();
-           }
-           break;
-       case 'a':		// strafe left motion
-           if (strcmp(gameMode, "-client") != 0 && netClient != 1) {
-               oldvpx = vpx;
-               oldvpy = vpy;
-               oldvpz = vpz;
-               roty = (mvy / 180.0 * 3.141592);
-               vpx += cos(roty) * 0.3;
-               vpz += sin(roty) * 0.3;
-               collisionResponse();
-               glutPostRedisplay();
-           }
-           break;
-       case 'd':		// strafe right motion
-           if (strcmp(gameMode, "-client") != 0  && netClient != 1) {
-               oldvpx = vpx;
-               oldvpy = vpy;
-               oldvpz = vpz;
-               roty = (mvy / 180.0 * 3.141592);
-               vpx -= cos(roty) * 0.3;
-               vpz -= sin(roty) * 0.3;
-               collisionResponse();
-               glutPostRedisplay();
-           }
-           break;
-       case 'f':		// toggle flying controls
+      case 'w':		// forward motion
+         if (strcmp(gameMode, "-client") != 0 && netClient != 1) {
+            oldvpx = vpx;
+            oldvpy = vpy;
+            oldvpz = vpz;
+            rotx = (mvx / 180.0 * 3.141592);
+            roty = (mvy / 180.0 * 3.141592);
+            vpx -= sin(roty) * 0.3;
+         // turn off y motion so you can't fly
+            if (flycontrol == 1)
+               vpy += sin(rotx) * 0.3;
+            vpz += cos(roty) * 0.3;
+            collisionResponse();
+            glutPostRedisplay();
+         }
+         break;
+      case 's':		// backward motion
+         if (strcmp(gameMode, "-client") != 0 && netClient != 1) {
+            oldvpx = vpx;
+            oldvpy = vpy;
+            oldvpz = vpz;
+            rotx = (mvx / 180.0 * 3.141592);
+            roty = (mvy / 180.0 * 3.141592);
+            vpx += sin(roty) * 0.3;
+         // turn off y motion so you can't fly
+            if (flycontrol == 1)
+               vpy -= sin(rotx) * 0.3;
+            vpz -= cos(roty) * 0.3;
+            collisionResponse();
+            glutPostRedisplay();
+         }
+         break;
+      case 'a':		// strafe left motion
+         if (strcmp(gameMode, "-client") != 0 && netClient != 1) {
+            oldvpx = vpx;
+            oldvpy = vpy;
+            oldvpz = vpz;
+            roty = (mvy / 180.0 * 3.141592);
+            vpx += cos(roty) * 0.3;
+            vpz += sin(roty) * 0.3;
+            collisionResponse();
+            glutPostRedisplay();
+         }   
+         break;
+      case 'd':		// strafe right motion
+         if (strcmp(gameMode, "-client") != 0  && netClient != 1) {
+            oldvpx = vpx;
+            oldvpy = vpy;
+            oldvpz = vpz;
+            roty = (mvy / 180.0 * 3.141592);
+            vpx -= cos(roty) * 0.3;
+            vpz -= sin(roty) * 0.3;
+            collisionResponse();
+            glutPostRedisplay();
+         }
+         break;
+      case 'f':		// toggle flying controls
          if (strcmp(gameMode, "-client") != 0) {
             if (flycontrol == 0) flycontrol = 1;
             else flycontrol = 0;
          }
          break;
-      case ' ':		// toggle space flag
-         space = 1;
+      case ' ':		// toggle dig flag, used to indicate user wants to dig
+         dig = 1;
          break;
       case 'm':		// toggle map display, 0=none, 1=small, 2=large
          displayMap++;
@@ -786,10 +786,10 @@ int i, fullscreen;
    glutPassiveMotionFunc(passivemotion);
    glutMotionFunc(motion);
    glutIdleFunc(update);
-    
-    if (strcmp(gameMode, "-client") != 0  && netClient != 1) {
-        glutMouseFunc(mouse);
-    }
+
+   if (strcmp(gameMode, "-client") != 0  && netClient != 1) {
+       glutMouseFunc(mouse);
+   }
 
 	/* initialize mob and player array to empty */
    initMobArray();
