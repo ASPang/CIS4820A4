@@ -59,7 +59,7 @@ float calSpeed(int, int);
 float calAngle(int, int);
 
 
-/*Functions for CIS4820A Assignment 3 - Networking*/
+/*Functions for CIS4820 Assignment 3 - Networking*/
 void openSocketServer();
 void openSocketClient();
 void writeSocket();
@@ -98,3 +98,8 @@ void addCordToMap(int, int, char *, int);
 
 //Thread Functions
 void *clientThread(void *);
+
+
+/*Functions for CIS4820 Assignment 4 - Enemy Opponent*/
+void setupEnemy();
+void moveEnemy();

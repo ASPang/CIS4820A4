@@ -15,6 +15,9 @@
 
 #include "graphics.h"
 
+/*Game Enemy Function*/
+extern void setupEnemy();
+
 /*Thread Functions*/
 extern void *clientThread(void *);
 
@@ -421,6 +424,9 @@ void update() {
         } else {
             
             /* your code goes here */
+            /*Move the Enemy*/
+            updateEnemy();
+            
             /*Move the clouds*/
             moveCloud();
             
@@ -973,12 +979,15 @@ int i, j, k;
                pthread_create(&cThread,NULL,clientThread, NULL);
            }
        }
-       
+              
        /*Creates the game landscape*/
        landscape();
        
        /*Initiate projectile array*/
        initProjectiles();
+       
+       /*Create the enemy*/
+       setupEnemy();
    }
 
 
