@@ -15,9 +15,9 @@
 //int eNum = 1;   //Enemy number
 
 struct enemyStruct {
-    int dx;
-    int dy;
-    int dz;
+    float dx;
+    float dy;
+    float dz;
     float zSpot;
     int zTarget;
     int xTarget;
@@ -31,7 +31,7 @@ struct enemyStruct enemy;
 char* lrDir = "east";
 
 /* list of players - number of mobs, xyz values and rotation about y */
-float playerPosition[MOB_COUNT][4];
+extern float playerPosition[MOB_COUNT][4];
 
 /* player controls */
 extern void createPlayer(int, float, float, float, float);
@@ -61,8 +61,8 @@ void setupEnemy() {
     showPlayer(1);
         
     /*Set up the enemy direction*/
-    enemy.dy = 0;   //Not going to moved up or down
-    enemy.dz = 0;   //Move right (east)
+    enemy.dy = 0.0;   //Not going to moved up or down
+    enemy.dz = 0.0;   //Move right (east)
     enemy.dx = -0.1;  //Move down (south)
     enemy.zTarget = 1;   //Move right (east)
     enemy.xTarget = -1;  //Move down (south)
@@ -96,7 +96,7 @@ void updateEnemy() {
     moveEnemy();
     
     /*Draw enemy to the screen*/
-    setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
+    //setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
     //showPlayer(1);
 }
 
@@ -134,13 +134,13 @@ int predictEnemyMove() {
     else if (zPos <= 5 && enemy.zTarget == 1) { //Enemy can is planned to move east
         enemy.zTarget = -1;   //Update enemy position to move west
     }*/
-    
+    printf("before direction = %f, %f \n", enemy.dx, enemy.dz);
     /*Determine mob direction*/
     if (enemy.dx != 0) {//Mob is going south or north
         enemy.dz = 0;
         
         /*Determine if the mob can move to that block*/
-        if (xPos <= 5 || xPos >= 95) {
+        if (xPos < 5 || xPos > 95) {
             enemy.dx = 0;
             enemy.zSpot = 5.5;
             
@@ -172,7 +172,7 @@ int predictEnemyMove() {
             enemy.zSpot -= 0.1;
         }
     }
-    
+    printf("---after direction = %f, %f \n", enemy.dx, enemy.dz);
 }
 
 void enemyEastWestDir() {
@@ -192,10 +192,19 @@ void enemyEastWestDir() {
 
 /*Update enemy position*/
 void moveEnemy() {
+    float xPos, yPos, zPos; //Current enemy Position
     
+    /*Get the current position of the enemy*/
+    getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
+    printf("---old enemy position = %f, %f, %f \n", xPos, yPos, zPos);
+    xPos = xPos + enemy.dx;
+    zPos = zPos + enemy.dz;
     
     /*Move the enemy based on the direction*/
+    setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
     
+    //printf("New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
+    printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
 }
 
 
