@@ -627,20 +627,25 @@ int searchForPlayer() {
     py *= -1;
     pz *= -1;
     
-   /*Get the vector line*/
+   /*Get the vector line
    dVecX = ex - px;
    dVecY = floor(py) - floor(ey);
-   dVecZ = ez - pz;
+   dVecZ = ez - pz;*/
+    
+    dVecX = px - ex;
+    dVecY = floor(py) - floor(ey);
+    dVecZ = pz - ez;
+    
    
    /*Determine if the enemy is facing the player*/
    if (abs(dVecX) <= 50 && abs(dVecZ) <= 50) {
-      /*if ((enemy.dx > 0 && px >= ex) ||
+      if ((enemy.dx > 0 && px >= ex) ||
             (enemy.dx < 0 && px <= ex) ||
             (enemy.dz > 0 && pz >= ez) ||
             (enemy.dz > 0 && pz <= ez)) {
           printf("sees the player \n");
-      }*/
-       if ((enemy.dx > 0 && px >= ex)){
+      }
+      /* if ((enemy.dx > 0 && px >= ex)){
        printf("sees the player 1\n");
        }
        else if (enemy.dx < 0 && px <= ex) {
@@ -651,7 +656,7 @@ int searchForPlayer() {
        }
        else if (enemy.dz > 0 && pz <= ez) {
            printf("sees the player 4\n");
-       }
+       }*/
       else {
           printf("NO Dosn't see \n");
          return 0;   //Player not spotted
@@ -684,9 +689,9 @@ int searchForPlayer() {
       ix = ix + dirX;
       iy = iy + dirY;
       iz = iz + dirZ;
-      
+      printf("printalll %f, %f, %f\n", ix, iy, iz);
       if ((int)ix > WORLDX || (int)ix < 0 || (int)iz > WORLDZ || (int)iz < 0 || (int)iy > WORLDY || (int)iy < 0) {
-           //printf("array out of bound issue %f, %f, %f\n", ix, iy, iz);
+           printf("array out of bound issue %f, %f, %f\n", ix, iy, iz);
            break;
       }
        
@@ -694,15 +699,25 @@ int searchForPlayer() {
          printf("Path is blocked to player --- block=%d --- ix = %f, %f, %f\n", world[(int)ix][(int)iy][(int)iz], ix, iy, iz);
          return 0;
       }
-      else if (ix >= px && iy >= py && iz >= pz) {
+      else if ((int)ceil(ix) >= (int)ceil(px) && (int)ceil(iy) >= (int)ceil(py) && (int)ceil(iz) >= (int)ceil(pz)) {
          printf("spotted player\n");
          /*Player is found*/
          /*Change AI state*/
-          
+          printf("SHOTTTING ************************%f,%f,%f\n", ex, ey, ez);
           /*Fire at the player*/
           enemyFireProj(ex, ey, ez, dirX, dirZ);
          
          return 1;
+      }
+      else if ((int)floor(ix) >= (int)floor(px) && (int)floor(iy) >= (int)floor(py) && (int)floor(iz) >= (int)floor(pz)) {
+          printf("spotted player\n");
+          /*Player is found*/
+          /*Change AI state*/
+          printf("SHOTTTING ************************%f,%f,%f\n", ex, ey, ez);
+          /*Fire at the player*/
+          enemyFireProj(ex, ey, ez, dirX, dirZ);
+          
+          return 1;
       }
       
    }
@@ -716,7 +731,7 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         
     /*Determine if the enemy can fire yet*/
     if (fireTimer()) {
-        printf("SHOT FIRED ************************\n");
+        printf("SHOT FIRED ************************%f,%f,%f\n", x, y, z);
         /*Convert values into a positive integer*/
         x = abs(x);
         y = abs(y);
@@ -727,7 +742,7 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
     
         /*Determine the orientation/quadrand of where the player is*/
         oriAngle = asin(hypot/z);
-    
+        printf("---hypot,z,hypot/z,oriAngle = %f,%f,%f,%d \n", hypot, z, hypot/z, oriAngle);
         /*Get the speed*/
         speed = 1.0;    //TESTING!!!!!
     
@@ -775,7 +790,7 @@ int fireTimer() {
     double time_in_mill;
     
     gettimeofday(&tv, NULL);
-    
+    printf("HERE");
     /*Determine if the timer has been set*/
     if (resetTime == 1) {
         /*Reset the timer*/
@@ -784,6 +799,7 @@ int fireTimer() {
         time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
         
         updateStart = time_in_mill;
+        return 1;
     }
     else if (resetTime == 0) {
         /*Determine if 0.08 second has passed*/
@@ -794,7 +810,7 @@ int fireTimer() {
         
         if (diff >= 5000) {
             resetTime = 1;  //Reset the timer
-            return 1;    //Return true that 1 second has passed
+            //return 1;    //Return true that 1 second has passed
         }
     }
     
