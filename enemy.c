@@ -104,7 +104,7 @@ void updateEnemy() {
     
     /*****Search mode******/
     /*Determine if the enemy can move in that direction*/
-    //predictEnemyMove();
+    predictEnemyMove();
     
     
     /*Update the enemy position in the game world*/
@@ -176,7 +176,7 @@ int predictEnemyMove() {
     //printf("tempY = %d, %d, %d \n",tempY,world[tempX][tempY - 1][tempZ] ,world[tempX][tempY - 2][tempZ] );
     if (tempY > 0) {
        /*Determine if there's a cube below the enemy*/
-       if ((world[tempX][tempY - 2][tempZ] == 0)) {
+       if ((world[tempX][tempY - 1][tempZ] == 0)) {
          printf("There's no cube under enemy \n");
          enemy.dy = -0.25;
        }
@@ -745,13 +745,20 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         printf("---hypot,z,hypot/z,oriAngle = %f,%f,%f,%d \n", hypot, z, z/hypot, oriAngle);
         printf("---dx,dz = %f,%f \n", dx, dz);
         /*Get the speed*/
-        if (fabsf(dx) < fabsf(dz)) {
+        /*if (fabsf(dx) < fabsf(dz)) {
             speed = fabsf(dx);
         }
         else {
             speed = fabsf(dz);
+        }*/
+        /*if (fabsf(dx) < fabsf(dz) && fabsf(dx) > 0.1) {
+            speed = fabsf(dx);
         }
-        speed = 0.5;    //TESTING!!!!!
+        else {
+            speed = fabsf(dz);
+        }*/
+        //speed = 0.5;    //TESTING!!!!!
+        speed = (fabsf(dx) + fabsf(dz)) / 2;
     
         /*Determine the angle to fire*/
         angle = 45.0;
