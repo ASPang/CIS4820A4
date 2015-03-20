@@ -725,9 +725,9 @@ int searchForPlayer() {
 
 /*Fire a projectile at the player*/
 void enemyFireProj(float x, float y, float z, float dx, float dz) {
-    float hypot, speed, angle;
+    float hypot, speed, angle, oriAngle2;
     float xPos, yPos, zPos;
-    int oriAngle, projNum;
+    int oriAngle = 0, projNum;
         
     /*Determine if the enemy can fire yet*/
     if (fireTimer()) {
@@ -741,10 +741,17 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         hypot = sqrt(x*x + z*z);
     
         /*Determine the orientation/quadrand of where the player is*/
-        oriAngle = asin(hypot/z);
-        printf("---hypot,z,hypot/z,oriAngle = %f,%f,%f,%d \n", hypot, z, hypot/z, oriAngle);
+        oriAngle = asin(z/hypot) *180.0f/M_PI;
+        printf("---hypot,z,hypot/z,oriAngle = %f,%f,%f,%d \n", hypot, z, z/hypot, oriAngle);
+        printf("---dx,dz = %f,%f \n", dx, dz);
         /*Get the speed*/
-        speed = 1.0;    //TESTING!!!!!
+        if (fabsf(dx) < fabsf(dz)) {
+            speed = fabsf(dx);
+        }
+        else {
+            speed = fabsf(dz);
+        }
+        speed = 0.5;    //TESTING!!!!!
     
         /*Determine the angle to fire*/
         angle = 45.0;
@@ -756,13 +763,13 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
     
         /*Save mob configuration on the plane*/
         projectile[projNum][0] = x;
-        projectile[projNum][2] = y;
+        projectile[projNum][2] = z;
         projectile[projNum][3] = dx;
         projectile[projNum][5] = dz;
-        projectile[projNum][6] = (float)oriAngle;
+        projectile[projNum][6] = (float)(oriAngle+EnemyFaceOpponent()-180);
     
         /*Save mob configuration in flight*/
-        projectile[projNum][1] = z;
+        projectile[projNum][1] = y;
         projectile[projNum][7] = (float)angle;
         projectile[projNum][8] = (float)speed;
         projectile[projNum][9] = 0.0;
