@@ -124,7 +124,7 @@ int predictEnemyMove() {
     tempX = (int)floor(x + enemy.dx*2);   //x-direction and buffer space
     tempZ = (int)floor(z + enemy.dz*2);   //z-direction and buffer space
     tempY = (int)floor(y); 
-    
+    printf("Enemy current position is at: %f, %f, %f \n", x,y,z);
     if (world[tempX][tempY][tempZ] != 0 && enemy.ySpot <= 0.0) {
       printf("ENEMY HAS HIT A CUBE \n");
       /*Determine if enemy can climb the cube*/
@@ -151,7 +151,9 @@ int predictEnemyMove() {
          }
       }         
       else {   //Cannot climb and would need to find a new way out
-         printf("---Cannot climb at all\n");
+         printf("---Cannot climb at all going to determine a brand new path\n");
+         /*Determine another path*/
+         searchEPath();
       }
     }
     
@@ -171,27 +173,6 @@ int predictEnemyMove() {
     /*Convert the direction to an integer*/
     xPos = (int)floor(x);
     zPos = (int)floor(z);
-    
-    /*Determine if the enemy needs to change direction
-    if (zPos >= 95 && enemy.dz == -1) { //Enemy can is planned to move west
-        enemy.zTarget = 1;   //Update enemy position to move east
-    }
-    else if (zPos <= 5 && enemy.dz == 1) { //Enemy can is planned to move east
-        enemy.dz = -1;   //Update enemy position to move west
-    }*/
-    
-    /*Determine if the enemy needs to change direction
-    if (zPos >= 95 && enemy.zTarget == -1) { //Enemy can is planned to move west
-        enemy.dz = 1;   //Update enemy position to move east
-    }
-    else if (zPos <= 5 && enemy.zTarget == 1) { //Enemy can is planned to move east
-        enemy.zTarget = -1;   //Update enemy position to move west
-    }*/
-    
-    
-    
-    
-    
     
     /*Determine mob direction*/
     if (enemy.dx != 0) {//Mob is going south or north
@@ -265,6 +246,135 @@ void moveEnemy() {
     //printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
 }
 
+/*Determine another route*/
+void searchEPath() {
+   /*Determine possible openings*/
+   if (enemy.dx < 0) {  //moving South
+   }
+   else if (enemy.dx < 0) {  //moving North
+   }
+   else if (enemy.dz > 0) {  //moving East
+   }
+   else if (enemy.dz < 0) {  //moving West
+   }   
+}
 
+/*Determine which way to look for clearing*/
+void dirSouth() {
+    int found = 0; //Determine if a path has been found
+    float x, y, z;
+    int xPos, yPos, zPos; //Current enemy Position 
+    
+    /*Get the current position of the enemy*/
+    getEnemyPosition(enemy.id, &x, &y, &z);
+    
+    /*Determine if the enemy hits a cube*/
+    xPos = (int)floor(x);   
+    yPos = (int)floor(y); 
+    zPos = (int)floor(z);       
+    
+   if (enemy.zTarget == 1) {  //If enemy is to be heading east
+      //Check East
+      if (enemy.zTarget > 0) {
+         found = lookEast(xPos, yPos, zPos);
+         
+         if (found == 0) {
+            found = lookEast(xPos, yPos + 1, zPos);
+         }
+         
+         if (found == 0) {
+            found = lookEast(xPos, yPos + 2, zPos);
+         }
+      }
+      else {
+      }
+      
+      //Check West
+   }
+   else {   //If enemy is to be heading east
+      //Check East
+      //Check West
+   }
+   
+   if (found == 0) { //Check North
+   }
+}
+
+
+/*Enemy Look East for a clearing
+ *0 = false (no the path is blocked)
+ *1 = true (there is a clearing)
+ */
+int lookEast(int x, int y, int z) {
+   z = z + 1;  //Look ahead
+   
+   if (z > -1 && z < WORLDY) {
+      if (world[x][y][z] == 0) {
+         enemy.dz = 0.1;   //Head east direction
+         enemy.dx = 0;
+         
+         return 1;
+      }
+   }
+   
+   return 0;   //No new path possible
+}
+
+/*Enemy Look West for a clearing
+ *0 = false (no the path is blocked)
+ *1 = true (there is a clearing)
+ */
+int lookWest(int x, int y, int z) {
+   z = z - 1;  //Look ahead
+   
+   if (z > -1 && z < WORLDY) {
+      if (world[x][y][z] == 0) {
+         enemy.dz = 0.1;   //Head east direction
+         enemy.dx = 0;
+         
+         return 1;
+      }
+   }
+   
+   return 0;   //No new path possible
+}
+
+/*Enemy Look North for a clearing
+ *0 = false (no the path is blocked)
+ *1 = true (there is a clearing)
+ */
+int lookNorth(int x, int y, int z) {
+   x = x + 1;  //Look ahead
+   
+   if (x > -1 && x < WORLDX) {
+      if (world[x][y][z] == 0) {
+         enemy.dz = 0;   //Head east direction
+         enemy.dx = 0.1;
+         
+         return 1;
+      }
+   }
+   
+   return 0;   //No new path possible
+}
+
+/*Enemy Look South for a clearing
+ *0 = false (no the path is blocked)
+ *1 = true (there is a clearing)
+ */
+int lookSouth(int x, int y, int z) {
+   x = x - 1;  //Look ahead
+   
+   if (x > -1 && x < WORLDX) {
+      if (world[x][y][z] == 0) {
+         enemy.dz = 0;   //Head east direction
+         enemy.dx = -0.1;
+         
+         return 1;
+      }
+   }
+   
+   return 0;   //No new path possible
+}
 
 /*Search algorithm*/
