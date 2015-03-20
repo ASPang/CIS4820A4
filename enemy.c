@@ -31,6 +31,10 @@ struct enemyStruct enemy;
 /*Emeny direction*/
 char* lrDir = "east";
 
+/* projectile Information */
+extern float projectile[10][10];  //dx, dy, velocity
+extern float projNumber;
+
 /* list of players - number of mobs, xyz values and rotation about y */
 extern float playerPosition[MOB_COUNT][4];
 
@@ -104,7 +108,7 @@ void updateEnemy() {
     
     
     /*Update the enemy position in the game world*/
-    //moveEnemy();
+    moveEnemy();
     
     /*Draw enemy to the screen*/
     //setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
@@ -247,6 +251,7 @@ void enemyEastWestDir() {
 /*Update enemy position*/
 void moveEnemy() {
     float xPos, yPos, zPos; //Current enemy Position
+    float orient;
     
     /*Get the current position of the enemy*/
     getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
@@ -263,11 +268,57 @@ void moveEnemy() {
         yPos = floor(yPos);
     }
     
+    orient = (float)enemyFace();
     /*Move the enemy based on the direction*/
-    setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
+    setPlayerPosition(enemy.id, xPos, yPos, zPos, orient);
     
     //printf("New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
     //printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
+}
+
+/*Determine the direction it should face*/
+int enemyFace() {
+    /*Determine the direction that the enemy is heading*/
+    if (enemy.dx > 0) { //North
+        return 90;
+    }
+    else if (enemy.dx < 0) { //South
+        return 270;
+        
+    }
+    else if (enemy.dy > 0) {    //East
+        return 180;
+        
+    }
+    else if (enemy.dy < 0) {    //West
+        return 360;
+    }
+}
+
+/*Determine the direction it should face in relation to the player*/
+int EnemyFaceOpponent() {
+    float px, py, pz;
+    float ex, ey, ez;
+    
+    /*Get the player*/
+    getViewPosition(&px, &py, &pz);
+    
+    /*Get the enemy*/
+    getEnemyPosition(enemy.id, &ex, &ey, &ez);
+    
+    /*Return the quadrant based on the quadrant*/
+    if (px < ex && pz <= ez) {   //Quadrant 4
+        return 270;
+    }
+    else if (px <= ex && pz > ez) {  //Quadrant 1
+        return 360;
+    }
+    else if (px > ex && pz >= ez) {  //Quadrant 2
+        return 90;
+    }
+    else if (px >= ex && pz < ez) {  //Quadrant 3
+        return 180;
+    }   
 }
 
 /*******************Determine another route*******************/
@@ -563,6 +614,7 @@ int searchForPlayer() {
    float dVecX, dVecY, dVecZ; //vector distance
    float dirX, dirY, dirZ; //direction of search
    float ix, iy, iz; //Displacement cord variable
+   float static fireTime;   //Counts the time elapse since shot was fired
    
    int darive; //Darivative of a line
    
@@ -646,6 +698,9 @@ int searchForPlayer() {
          printf("spotted player\n");
          /*Player is found*/
          /*Change AI state*/
+          
+          /*Fire at the player*/
+          enemyFireProj(ex, ey, ez, dirX, dirZ);
          
          return 1;
       }
@@ -653,9 +708,98 @@ int searchForPlayer() {
    }
 }
 
+/*Fire a projectile at the player*/
+void enemyFireProj(float x, float y, float z, float dx, float dz) {
+    float hypot, speed, angle;
+    float xPos, yPos, zPos;
+    int oriAngle, projNum;
+        
+    /*Determine if the enemy can fire yet*/
+    if (fireTimer()) {
+        printf("SHOT FIRED ************************\n");
+        /*Convert values into a positive integer*/
+        x = abs(x);
+        y = abs(y);
+        z = abs(z);
+    
+        /*Determine the hypothense*/
+        hypot = sqrt(x*x + z*z);
+    
+        /*Determine the orientation/quadrand of where the player is*/
+        oriAngle = asin(hypot/z);
+    
+        /*Get the speed*/
+        speed = 1.0;    //TESTING!!!!!
+    
+        /*Determine the angle to fire*/
+        angle = 45.0;
+    
+        /*Create the mob*/
+        projNum = projNumber;
+        createMob(projNum, x, y, z, 0);
+        showMob(projNum);
+    
+        /*Save mob configuration on the plane*/
+        projectile[projNum][0] = x;
+        projectile[projNum][2] = y;
+        projectile[projNum][3] = dx;
+        projectile[projNum][5] = dz;
+        projectile[projNum][6] = (float)oriAngle;
+    
+        /*Save mob configuration in flight*/
+        projectile[projNum][1] = z;
+        projectile[projNum][7] = (float)angle;
+        projectile[projNum][8] = (float)speed;
+        projectile[projNum][9] = 0.0;
+    
+        /*Determine the number of projectiles in the world*/
+        if (projNumber + 1 >= 9) {
+            projNumber = 0;
+        }
+        else {
+            projNumber++;   //Increase projectile number
+        }
+    }    
+}
 
 
-
+/*Counts down to when the AI can shoot again*/
+int fireTimer() {
+    static clock_t updateStart;
+    clock_t updateEnd;
+    static int resetTime = 1;
+    int milsec = 10000; //Milliseconds;
+    double diff;
+    
+    struct timeval  tv;
+    double time_in_mill;
+    
+    gettimeofday(&tv, NULL);
+    
+    /*Determine if the timer has been set*/
+    if (resetTime == 1) {
+        /*Reset the timer*/
+        resetTime = 0;
+        
+        time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+        
+        updateStart = time_in_mill;
+    }
+    else if (resetTime == 0) {
+        /*Determine if 0.08 second has passed*/
+        time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+        
+        updateEnd = time_in_mill;
+        diff = ((updateEnd - updateStart));
+        
+        if (diff >= 5000) {
+            resetTime = 1;  //Reset the timer
+            return 1;    //Return true that 1 second has passed
+        }
+    }
+    
+    return 0;   //Don't update the function
+}
 
 
 
