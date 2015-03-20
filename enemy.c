@@ -82,6 +82,7 @@ void setupEnemy() {
 /*Determine the state of the enemy and perform appropriate actions*/
 void enemyMode() {
     float x, y, z;
+    float orient;
     
     /*Determine what mode the enemy is in*/
     if (enemy.mode == 0) { //Search mode
@@ -91,10 +92,12 @@ void enemyMode() {
         getEnemyPosition(enemy.id, &x, &y, &z);
         
         /*Fire at the player*/
-        searchForPlayer();
-        //printf("HERE - %d \n", EnemyFaceOpponent());
-        /*Face the player*/
-        setPlayerPosition(enemy.id, x, y, z, EnemyFaceOpponent());
+        if (searchForPlayer()) {
+            /*Face the player*/
+            orient = followPlayer();
+            printf("face player done function orient %f\n", orient);
+            setPlayerPosition(enemy.id, x, y, z, (float)orient);
+        }
     }
 }
 
@@ -111,7 +114,7 @@ void updateEnemy() {
     
     /*****Search mode******/
     /*Determine if the enemy can move in that direction*/
-    predictEnemyMove();
+    //predictEnemyMove();
     
     
     /*Update the enemy position in the game world*/
@@ -797,7 +800,85 @@ int fireTimer() {
 }
 
 
+int followPlayer() {
+    float hypot, oriAngle;
+    float x, y, z;
+    float px, py, pz;
+    float ex, ey, ez;
+    int orient;
+    
+    /*Get player's position*/
+    getViewPosition(&px, &py, &pz);
+    
+    /*Get mob position*/
+    getEnemyPosition(enemy.id, &ex, &ey, &ez);
+        
+    /*Determine the hypothense*/
+    x = abs(ex - px*-1);
+    y = abs(ey - py*-1);
+    z = abs(ez - pz*-1);
+    
+    hypot = sqrt(x*x + z*z);
+    
+    /*Determine the orientation/quadrand of where the player is*/
+    oriAngle = asin(z/hypot) * 180.0f / M_PI;
+    
+    
+    
+    
+    
+    orient = enemyQuad() -  oriAngle;
+    
+    if (enemyQuad() == 360 && oriAngle < 90) {
+        orient = 270 + oriAngle;
+    }
+    else if(enemyQuad() == 180 && oriAngle < 90) {
+        orient = 90 + oriAngle;
+    }
+    
+    printf("oriangle, orient,EnemyFaceOpponent, enemyQuad = %f,%d,%d,%d,%f,%f,%f \n", oriAngle, orient, EnemyFaceOpponent(), enemyQuad(), (oriAngle+EnemyFaceOpponent()-180), enemy.dx, enemy.dz);
+        
+    
+    return orient;
+}
 
+int enemyQuad() {
+    float px, py, pz;
+    float ex, ey, ez;
+    
+    /*Get the player*/
+    getViewPosition(&px, &py, &pz);
+    
+    /*Get the enemy*/
+    getEnemyPosition(enemy.id, &ex, &ey, &ez);
+    
+    /*Convert position to positive value for player*/
+    px = abs(px);
+    py = abs(py);
+    pz = abs(pz);
+    
+    /*Return the quadrant based on the quadrant*/
+    if (px < ex && pz <= ez) {   //Quadrant 4
+        enemy.dx = -0.1;
+        enemy.dz = 0;
+        return 270;
+    }
+    else if (px <= ex && pz > ez) {  //Quadrant 3
+        enemy.dz = 0.1;
+        enemy.dx = 0;
+        return 360;
+    }
+    else if (px > ex && pz >= ez) {  //Quadrant 2
+        enemy.dx = 0.1;
+        enemy.dz = 0;
+        return 90;
+    }
+    else if (px >= ex && pz < ez) {  //Quadrant 1
+        enemy.dz = -0.1;
+        enemy.dx = 0;
+        return 180;
+    }
+}
 
 
 
