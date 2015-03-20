@@ -696,4 +696,79 @@ int lookSouth(int x, int y, int z) {
    return 0;   //No new path possible
 }
 
-/*******************Search algorithm*******************/
+/*******************Search Player Algorithm*******************/
+int searchForPlayer() {
+   float px, py, pz; //Player cords
+   float ex, ey, ez; //Enemy cords
+   float dVecX, dVecY, dVecZ; //vector distance
+   float dirX, dirY, dirZ; //direction of search
+   float ix, iy, iz; //Displacement cord variable
+   
+   int darive; //Darivative of a line
+   
+   /*Get the vector line*/
+   dVecX = ex - px;
+   dVecY = ey - py;
+   dVecZ = ez - pz;
+   
+   /*Determine if the enemy is facing the player*/
+   if (abs(dVecX) <= 50 && abs(dVecZ) <= 50) {
+      if ((enemy.dx > 0 && px >= ex) ||
+            (enemy.dx < 0 && px <= ex) ||
+            (enemy.dz > 0 && pz >= ez) ||
+            (enemy.dz > 0 && pz <= ez)) {
+      }
+      else {
+         return 0;   //Player not spotted
+      }
+   }
+   
+   /*Get the darivative of the vector lines*/
+   darive = sqrt(dVecX*dVecX + dVecY*dVecY + dVecZ*dVecZ);
+   
+   /*Calculate the travel distance*/
+   dirX = dVecX / darive;
+   dirY = dVecY / darive;
+   dirZ = dVecZ / darive;
+   
+   /*Set up the displacement cord variable*/
+   ix = ex;
+   iy = ey;
+   iz = iz;
+   
+   /*Search for player*/
+   while(1) {
+      ix = ix + dirX;
+      iy = iy + dirY;
+      iz = iz + dirZ;
+      
+      if (world[(int)ix][(int)iy][(int)iz]) {
+         printf("Path is blocked to player\n");
+         return 0;
+      }
+      else if (ix >= px && iy >= py && iz >= pz) {
+         printf("spotted player\n");
+         /*Player is found*/
+         /*Change AI state*/
+         
+         return 1;
+      }
+      
+   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
