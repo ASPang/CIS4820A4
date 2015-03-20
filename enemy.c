@@ -32,7 +32,7 @@ struct enemyStruct enemy;
 char* lrDir = "east";
 
 /* projectile Information */
-extern float projectile[10][10];  //dx, dy, velocity
+extern float projectile[10][12];  //dx, dy, velocity
 extern float projNumber;
 
 /* list of players - number of mobs, xyz values and rotation about y */
@@ -65,7 +65,6 @@ void setupEnemy() {
         }
     }
     /*Place the enemy at the beginning to be on 5,95*/
-    printf("The enemy created is at: %f, %f, %f \n", x, y, z);
     createPlayer(enemy.id, x, y, z, 0);
     showPlayer(1);
         
@@ -82,12 +81,20 @@ void setupEnemy() {
 
 /*Determine the state of the enemy and perform appropriate actions*/
 void enemyMode() {
+    float x, y, z;
+    
     /*Determine what mode the enemy is in*/
     if (enemy.mode == 0) { //Search mode
-        
+        updateEnemy();
     }
     else if (enemy.mode == 1) { //Fight mode
+        getEnemyPosition(enemy.id, &x, &y, &z);
         
+        /*Fire at the player*/
+        searchForPlayer();
+        //printf("HERE - %d \n", EnemyFaceOpponent());
+        /*Face the player*/
+        setPlayerPosition(enemy.id, x, y, z, EnemyFaceOpponent());
     }
 }
 
@@ -96,7 +103,7 @@ void updateEnemy() {
     float xPos, yPos, zPos; //Current enemy Position
     
     /*Get the current position of the enemy*/
-    getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
+    //getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
     //printf("The enemy created is at: %f, %f, %f \n", xPos, yPos, zPos);
     
     /*Determine if the enemy spots the player*/
@@ -152,7 +159,7 @@ int predictEnemyMove() {
                 printf("---Cannot climb 1\n");
             }
         }
-        else if (tempY + 2 < WORLDY) {   //Determine if enemy can climb 2 squares
+        if (tempY + 2 < WORLDY) {   //Determine if enemy can climb 2 squares
             if(world[tempX][tempY + 2][tempZ] == 0) {   //Attempt to climb two cubes
                 /*enemy.dy = 0.1;
                  enemy.ySpot = 2.0;*/
@@ -174,11 +181,11 @@ int predictEnemyMove() {
     
     /*Determine if there's a cube under the player*/
     //printf("tempY = %d, %d, %d \n",tempY,world[tempX][tempY - 1][tempZ] ,world[tempX][tempY - 2][tempZ] );
-    if (tempY > 0) {
+    if (tempY > 1) {
        /*Determine if there's a cube below the enemy*/
        if ((world[tempX][tempY - 1][tempZ] == 0)) {
          printf("There's no cube under enemy \n");
-         enemy.dy = -0.25;
+         enemy.dy = -0.12;
        }
        else {
            enemy.dy = 0;
@@ -627,11 +634,7 @@ int searchForPlayer() {
     py *= -1;
     pz *= -1;
     
-   /*Get the vector line
-   dVecX = ex - px;
-   dVecY = floor(py) - floor(ey);
-   dVecZ = ez - pz;*/
-    
+   /*Get the vector line*/    
     dVecX = px - ex;
     dVecY = floor(py) - floor(ey);
     dVecZ = pz - ez;
@@ -643,27 +646,12 @@ int searchForPlayer() {
             (enemy.dx < 0 && px <= ex) ||
             (enemy.dz > 0 && pz >= ez) ||
             (enemy.dz > 0 && pz <= ez)) {
-          printf("sees the player \n");
       }
-      /* if ((enemy.dx > 0 && px >= ex)){
-       printf("sees the player 1\n");
-       }
-       else if (enemy.dx < 0 && px <= ex) {
-       printf("sees the player 2\n");
-       }
-       else if (enemy.dz > 0 && pz >= ez) {
-       printf("sees the player 3\n");
-       }
-       else if (enemy.dz > 0 && pz <= ez) {
-           printf("sees the player 4\n");
-       }*/
       else {
-          printf("NO Dosn't see \n");
          return 0;   //Player not spotted
       }
    }
    else {
-       printf("NO Dosn't see \n");
        return 0;   //Player not spotted
    }
     
@@ -679,42 +667,34 @@ int searchForPlayer() {
    ix = ex;
    iy = ey;
    iz = ez;
-    printf("dVec = %f, %f, %f \n", dVecX, dVecY, dVecZ);
-    printf("---darive = %d, dir= %f, %f, %f \n", darive, dirX, dirY, dirZ );
-    printf("---ix = %f, %f, %f \n", ix, iy, iz);
-    printf("-------playerCord %f, %f, %f\n", px, py, pz);
-    printf("-------enemyCord %f, %f, %f\n", ex, ey, ez);
+    
    /*Search for player*/
    while(1) {
       ix = ix + dirX;
       iy = iy + dirY;
       iz = iz + dirZ;
-      printf("printalll %f, %f, %f\n", ix, iy, iz);
+       
       if ((int)ix > WORLDX || (int)ix < 0 || (int)iz > WORLDZ || (int)iz < 0 || (int)iy > WORLDY || (int)iy < 0) {
-           printf("array out of bound issue %f, %f, %f\n", ix, iy, iz);
            break;
       }
        
-      if (world[(int)ix][(int)iy][(int)iz] != 0) {
-         printf("Path is blocked to player --- block=%d --- ix = %f, %f, %f\n", world[(int)ix][(int)iy][(int)iz], ix, iy, iz);
+      if (world[(int)ix][(int)iy][(int)iz] != 0) {          
          return 0;
       }
-      else if ((int)ceil(ix) >= (int)ceil(px) && (int)ceil(iy) >= (int)ceil(py) && (int)ceil(iz) >= (int)ceil(pz)) {
-         printf("spotted player\n");
-         /*Player is found*/
-         /*Change AI state*/
-          printf("SHOTTTING ************************%f,%f,%f\n", ex, ey, ez);
-          /*Fire at the player*/
+      else if ((int)ceil(ix) >= (int)ceil(px) && (int)ceil(iy) >= (int)ceil(py) && (int)ceil(iz) >= (int)ceil(pz)) {    //Found Player
+          /*Change AI state to fight*/
+          enemy.mode = 1;
+          
+          /*Fire at player*/
           enemyFireProj(ex, ey, ez, dirX, dirZ);
-         
-         return 1;
+          
+          return 1;
       }
-      else if ((int)floor(ix) >= (int)floor(px) && (int)floor(iy) >= (int)floor(py) && (int)floor(iz) >= (int)floor(pz)) {
-          printf("spotted player\n");
-          /*Player is found*/
-          /*Change AI state*/
-          printf("SHOTTTING ************************%f,%f,%f\n", ex, ey, ez);
-          /*Fire at the player*/
+      else if ((int)floor(ix) >= (int)floor(px) && (int)floor(iy) >= (int)floor(py) && (int)floor(iz) >= (int)floor(pz)) {  //Found Player
+          /*Change AI state to fight*/
+          enemy.mode = 1;
+          
+          /*Fire at player*/
           enemyFireProj(ex, ey, ez, dirX, dirZ);
           
           return 1;
@@ -731,7 +711,6 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         
     /*Determine if the enemy can fire yet*/
     if (fireTimer()) {
-        printf("SHOT FIRED ************************%f,%f,%f\n", x, y, z);
         /*Convert values into a positive integer*/
         x = abs(x);
         y = abs(y);
@@ -741,24 +720,11 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         hypot = sqrt(x*x + z*z);
     
         /*Determine the orientation/quadrand of where the player is*/
-        oriAngle = asin(z/hypot) *180.0f/M_PI;
-        printf("---hypot,z,hypot/z,oriAngle = %f,%f,%f,%d \n", hypot, z, z/hypot, oriAngle);
-        printf("---dx,dz = %f,%f \n", dx, dz);
+        oriAngle = asin(z/hypot) * 180.0f / M_PI;
+        
         /*Get the speed*/
-        /*if (fabsf(dx) < fabsf(dz)) {
-            speed = fabsf(dx);
-        }
-        else {
-            speed = fabsf(dz);
-        }*/
-        /*if (fabsf(dx) < fabsf(dz) && fabsf(dx) > 0.1) {
-            speed = fabsf(dx);
-        }
-        else {
-            speed = fabsf(dz);
-        }*/
-        //speed = 0.5;    //TESTING!!!!!
         speed = (fabsf(dx) + fabsf(dz)) / 2;
+        printf("fabsf(dx), fabsf(dz), speed = %f,%f,%f\n", fabsf(dx),fabsf(dz),speed);
     
         /*Determine the angle to fire*/
         angle = 45.0;
@@ -780,6 +746,7 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         projectile[projNum][7] = (float)angle;
         projectile[projNum][8] = (float)speed;
         projectile[projNum][9] = 0.0;
+        projectile[projNum][10] = 1.0;  //State mob belows to enemy
     
         /*Determine the number of projectiles in the world*/
         if (projNumber + 1 >= 9) {
@@ -804,7 +771,6 @@ int fireTimer() {
     double time_in_mill;
     
     gettimeofday(&tv, NULL);
-    printf("HERE");
     /*Determine if the timer has been set*/
     if (resetTime == 1) {
         /*Reset the timer*/
@@ -824,13 +790,11 @@ int fireTimer() {
         
         if (diff >= 5000) {
             resetTime = 1;  //Reset the timer
-            //return 1;    //Return true that 1 second has passed
         }
     }
     
     return 0;   //Don't update the function
 }
-
 
 
 

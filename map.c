@@ -14,7 +14,7 @@ extern void  draw2Dtriangle(int, int, int, int, int, int);
 extern void  set2Dcolour(float []);
 
    /* projectile Information */
-extern float projectile[10][10];  //dx, dy, velocity
+extern float projectile[10][12];  //dx, dy, velocity
 extern float projNumber;
 
    /*Projectile Calculation Function*/

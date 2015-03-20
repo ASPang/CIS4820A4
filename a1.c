@@ -15,6 +15,21 @@
 
 #include "graphics.h"
 
+/*Enemy information struct*/
+extern struct enemyStruct {
+    float dx;
+    float dy;
+    float dz;
+    float zSpot;
+    float ySpot;
+    int zTarget;
+    int xTarget;
+    int mode;
+    int id;
+};
+
+extern struct enemyStruct enemy;;
+
 /*Game Enemy Function*/
 extern void setupEnemy();
 
@@ -43,7 +58,7 @@ extern void drawProjToMap(int, int, int);
 char* gameMode = "";    //The game can be of one of two different states: -server or -client
 
 /* projectile Information */
-float projectile[10][10];  //dx, dy, velocity
+float projectile[10][12];  //dx, dy, velocity
 float projNumber=0;
 
 /* Landscape seed */
@@ -288,6 +303,9 @@ void draw2D() {
             /*Draw a square to indicate the player's location on the map*/
             drawPlayerToMap(mX1, mY2, mSize);
             
+            /*Draw a square to indicate the enemy's current location on the map*/
+            drawEnemyToMap(mX1, mY2, mSize);
+            
             /*Draw the map area*/
             drawMapArea(mX1, mY1, mX2, mY2, mSize);
         }
@@ -307,6 +325,9 @@ void draw2D() {
             
             /*Draw a square to indicate the player's location on the map*/
             drawPlayerToMap(mX1, mY2, mSize);
+            
+            /*Draw a square to indicate the enemy's current location on the map*/
+            drawEnemyToMap(mX1, mY2, mSize);
             
             /*Draw the map area*/
             drawMapArea(mX1, mY1, mX2, mY2, mSize);
@@ -425,7 +446,7 @@ void update() {
             
             /* your code goes here */
             /*Move the Enemy*/
-            updateEnemy();
+            enemyMode();
             
             /*Move the clouds*/
             moveCloud();
@@ -626,7 +647,7 @@ void objectCollision() {
     int demoCordsMid[] = {-1,-1,   -1,0,   -1,1,
         0,-1,    0,0,    0,1,
         1,-1,    1,0,    1,1};   //Second Row of destruction
-    
+    int hit = 0;
     
     for (i = 0; i < 10; i++) {
         /*Get current projectile position*/
@@ -652,11 +673,20 @@ void objectCollision() {
                 cube = world[xPos][yPos][zPos];
                 
                 if (cube != 0) {
+                    
+                    
                     /*First level of destruction*/
                     for (c = 0; c < 50; c += 2) {
                         newX = xPos + demoCordsTop[c];
                         newZ = zPos + demoCordsTop[c+1];
-                        if (newX >= min && newX < xMax && newZ >= min && newZ < zMax && yPos >= min) {                            world[newX][yPos][newZ] = 0;
+                        if (newX >= min && newX < xMax && newZ >= min && newZ < zMax && yPos >= min) {
+                            /*Clear cube*/
+                            world[newX][yPos][newZ] = 0;
+                            
+                            /*Determine if any ingame characters are hit*/
+                            if (hit == 0) {
+                                hit = directHit(projectile[i][10], newX, yPos, newZ);
+                            }
                         }
                     }
                     
@@ -664,14 +694,40 @@ void objectCollision() {
                     for (c = 0; c < 18; c += 2) {
                         newX = xPos + demoCordsTop[c];
                         newZ = zPos + demoCordsTop[c+1];
-                        if (newX >= min && newX < xMax && newZ >= min && newZ < zMax && yPos - 1 >= min) {                            world[newX][yPos-1][newZ] = 0;
+                        if (newX >= min && newX < xMax && newZ >= min && newZ < zMax && yPos - 1 >= min) {
+                            /*Clear cube*/
+                            world[newX][yPos-1][newZ] = 0;
+                            
+                            /*Determine if any ingame characters are hit*/
+                            if (hit == 0) {
+                                hit = directHit(projectile[i][10], newX, yPos-1, newZ);
+                            }
                         }
                     }
                     
                     /*Last cube destruction*/
                     if (yPos - 2 >= min) {
                         world[xPos][yPos-2][zPos] = 0;
+                        
+                        /*Determine if any ingame characters are hit*/
+                        if (hit == 0) {
+                            hit = directHit(projectile[i][10], xPos, yPos-2, zPos);
+                        }
                     }
+                    
+                    /*Inform users of any indirect hit projectiles*/
+                    if (hit == 0) {
+                        /************/
+                        printf("before going %d,%d,%d\n", xPos, yPos, zPos);
+                        if (indirectHit(projectile[i][10], xPos, yPos, zPos)) {
+                            printf("Indirect Hit! \n-----\n");
+                        }
+                    }
+                    else if (hit == 1) {
+                        printf("Direct Hit! \n-----\n");
+                    }
+                    
+                    hit = 0;
                     
                     /*Reset projectile*/
                     hideMob(i);
@@ -682,6 +738,138 @@ void objectCollision() {
     }
 }
 
+/*Determines if any of the projects hit either the enemy or the user*/
+int directHit(float proj, int cx, int cy, int cz) {
+    float x, y, z;    
+    
+    /*Determine whom the projectile belonged to*/
+    if (proj <= 0) { //Player's projectile
+        getEnemyPosition(enemy.id, &x, &y, &z);
+    }
+    else {  //Enemy's projectile
+        getViewPosition(&x, &y, &z);     
+    }
+    
+    y = fabsf(y);   //Convert the y value to a postitive value
+    
+    if (hitResult(x, y, z, cx, cy+1, cz)) {
+        printf("HERE*****c1\n");
+        return 1;
+    }
+    
+    if (y - 1 > 0) {
+        if (hitResult(x, y-1, z, cx, cy, cz)) {
+            printf("HERE*****y1\n");
+            return 1;
+        }
+    }
+    
+    if (y - 2 > 0) {
+        if (hitResult(x, y-2, z, cx, cy, cz)) {
+            printf("HERE*****y2\n");
+            return 1;
+        }
+    }
+    
+    if (y - 3 > 0) {
+        if (hitResult(x, y-3, z, cx, cy, cz)) {
+            printf("HERE*****y3\n");
+            return 1;
+        }
+    }
+    
+    return 0;
+}
+
+int hitResult(float x, float y, float z, int cx, int cy, int cz) {
+    int ix, iy, iz;
+    
+    /*Convert the float number to integer values*/
+    ix = abs((int)floor(x));
+    iy = abs((int)floor(y));
+    iz = abs((int)floor(z));
+    //printf("hitresult player - %d,%d,%d\n", ix, iy, iz);
+    //printf("---hitresult %d,%d,%d\n", cx, cy, cz);
+    if (ix == cx && iy == cy && iz == cz) {
+        printf("HERE*****\n");
+        return 1;
+    }
+    
+    /*Convert the float number to integer values*/
+    ix = abs((int)floor(x));
+    iy = abs((int)floor(y));
+    iz = abs((int)floor(z));
+    //printf("hitresult player - %d,%d,%d\n", ix, iy, iz);
+    //printf("---hitresult %d,%d,%d\n", cx, cy, cz);
+    if (ix == cx && iy == cy && iz == cz) {
+        printf("HERE2*****\n");
+        return 1;
+    }
+    
+    return 0;   //Character was no in that area
+}
+
+int indirectHit(int proj, int cx, int cy, int cz) {
+    int aoe[] = {
+        -4,-4,   -4,-3,   -4,-2,   -4,-1,   -4,0,   -4,1,   -4,2,   -4,3,   -4,4,
+        -3,-4,   -3,-3,   -3,-2,   -3,-1,   -3,0,   -3,1,   -3,2,   -3,3,   -3,4,
+        -2,-4,   -2,-3,   -2,-2,   -2,-1,   -2,0,   -2,1,   -2,2,   -2,3,   -2,4,
+        -1,-4,   -1,-3,   -1,-2,   -1,-1,   -1,0,   -1,1,   -1,2,   -1,3,   -1,4,
+         0,-4,    0,-3,    0,-2,    0,-1,    0,0,    0,1,    0,2,    0,3,    0,4,
+         1,-4,    1,-3,    1,-2,    1,-1,    1,0,    1,1,    1,2,    1,3,    1,4,
+         2,-4,    2,-3,    2,-2,    2,-1,    2,0,    2,1,    2,2,     2,3,    2,4,
+         3,-4,    3,-3,    3,-2,    3,-1,    3,0,    3,1,    3,2,    3,3,    3,4,
+         4,-4,    4,-3,    4,-2,    4,-1,    4,0,    4,1,    4,2,    4,3,    4,4};  //First Row of destruction
+    int c = 0;    
+    float x, y, z;
+    
+    /*Determine whom the projectile belonged to*/
+    if (proj <= 0) { //Player's projectile
+        getEnemyPosition(enemy.id, &x, &y, &z);
+    }
+    else {  //Enemy's projectile
+        getViewPosition(&x, &y, &z);
+    }
+    
+    printf("cx, int cy, int cz = %d, %d, %d \n", cx, cy, cz);
+        
+    y = fabsf(y);   //Convert the y value to a postitive value
+    
+    /*Determine if the character is in any of the indirect squares*/
+    for (c = 0; c < 162; c += 2) {        
+        if (hitResult(x, y, z, cx + aoe[c], cy+1, cz+ aoe[c+1])) {
+            printf("HERE*****c12\n");
+            return 1;
+        }
+        
+        if (y - 1 > 0) {
+            if (hitResult(x, y-1, z, cx+aoe[c], cy, cz+aoe[c+1])) {
+                printf("HERE*****y12\n");
+                return 1;
+            }
+        }
+        
+        if (y - 2 > 0) {
+            if (hitResult(x, y-2, z, cx+aoe[c], cy, cz+aoe[c+1])) {
+                printf("HERE*****y22\n");
+                return 1;
+            }
+        }
+        
+        if (y - 3 > 0) {
+            if (hitResult(x, y-3, z, cx+aoe[c], cy, cz+aoe[c+1])) {
+                printf("HERE*****y32\n");
+                return 1;
+            }
+        }
+    }
+    
+    return 0;
+}
+/*Print message to the screen*/
+void printShotResult() {
+
+}
 
 /* called by GLUT when a mouse button is pressed or released */
 /* -button indicates which button was pressed or released */
@@ -754,6 +942,7 @@ void mouse(int button, int state, int x, int y) {
         projectile[projNum][7] = (float)angle;
         projectile[projNum][8] = (float)speed;
         projectile[projNum][9] = 0.0;
+        projectile[projNum][10] = 0.0;  //State mob belongs to player
         
         /*Determine the number of projectiles in the world*/
         if (projNumber + 1 >= 9) {
@@ -988,6 +1177,9 @@ int i, j, k;
        
        /*Create the enemy*/
        setupEnemy();
+       
+       /*TESTING*/
+       setViewPosition(-50,-1,-50);
    }
 
 
@@ -1001,7 +1193,7 @@ int i, j, k;
 void landscape() {
     grassLand();   //Add a bottom to the world
     waterFlow();   //Add body of water
-    mountainTops(); //Add terrain
+    //mountainTops(); //Add terrain
     cloudFloat();  //Add clounds
     
     worldOrientation();
@@ -1318,7 +1510,7 @@ void initProjectiles() {
     int i, k;
     
     for (i = 0; i < 10; i++) {
-        for (k = 0; k < 10; k++) {
+        for (k = 0; k < 12; k++) {
             projectile[i][k] = -1;
         }
     }
@@ -1328,7 +1520,7 @@ void initProjectiles() {
 void clearProjectile(num) {
     int i;
     
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 12; i++) {
         projectile[num][i] = -1;
         
     }

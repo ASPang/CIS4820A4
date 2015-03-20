@@ -101,6 +101,7 @@ void *clientThread(void *);
 
 
 /*Functions for CIS4820 Assignment 4 - Enemy Opponent*/
+//void updateEnemy();
 void setupEnemy();
 void moveEnemy();
 
@@ -111,3 +112,7 @@ void searchEPath();
 void dirSouthAndNorth();
 void dirEastAndWest();
 
+void enemyFireProj(float, float, float, float, float);
+int directHit(float, int, int, int);
+int hitResult(float, float, float, int, int, int);
+int indirectHit(int, int, int, int);

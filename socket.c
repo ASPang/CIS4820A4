@@ -27,7 +27,7 @@ struct sockaddr_in address;
 extern int landSeed;
 
     /* projectile Information */
-extern float projectile[10][10];  //dx, dy, velocity
+extern float projectile[10][12];  //dx, dy, velocity
 extern float projNumber;
 
    /*Projectile Calculation Function*/
