@@ -93,6 +93,36 @@ void drawPlayerToMap(int mX, int mY, int mSize) {
    draw2Dbox(mX - pSize, mY - pSize, mX + pSize, mY + pSize); //int x1, int y1, int x2, int y2
 }
 
+/*Display Enemy's current position*/
+void drawEnemyToMap(int mX, int mY, int mSize) {
+    /*Player Variables*/
+    int pSize = screenWidth * 0.01; //Player size
+    float x, y, z;
+    int pX, pY;
+    
+    /*Colour Variable*/
+    GLfloat red[] = {0.5, 0.0, 0.0, 0.5};
+    
+    /*Get player's current position*/
+    getEnemyPosition(1,&x, &y, &z);
+    //printf("Player - x, y, z - %f, %f, %f \n", x, y, z);
+    /*Convert the location to positive integer by:
+     *1)Convert cord to a percentage
+     *2)Multiple it by map size
+     *3)convert it to a positive number
+     */
+    pX = (int)floor(z/100 * mSize);
+    pY = (int)floor(x/100 * mSize);
+    
+    /*Convert location to map*/
+    mX += pX;
+    mY += pY;
+        
+    /*Create a 20x20 pixel square and center it to represent the player*/
+    set2Dcolour(red);
+    draw2Dbox(mX - pSize, mY - pSize, mX + pSize, mY + pSize); //int x1, int y1, int x2, int y2
+}
+
 /*Draw any projectiles to the map*/
 void drawProjToMap(int mX, int mY, int mSize) {
    /*Player Variables*/

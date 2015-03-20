@@ -103,3 +103,11 @@ void *clientThread(void *);
 /*Functions for CIS4820 Assignment 4 - Enemy Opponent*/
 void setupEnemy();
 void moveEnemy();
+
+void getEnemyPosition(int, float*, float*, float*);
+
+void enemyEastWestDir();
+void searchEPath();
+void dirSouthAndNorth();
+void dirEastAndWest();
+
