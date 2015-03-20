@@ -19,6 +19,7 @@ struct enemyStruct {
     float dy;
     float dz;
     float zSpot;
+    float ySpot;
     int zTarget;
     int xTarget;
     int mode;
@@ -42,7 +43,8 @@ extern void showPlayer(int);
 /*Place enemy onto the world*/
 void setupEnemy() {
     int i = 0;
-    float x=95.5, y, z = 5.5; //Enemy position
+    //float x=95.5, y, z = 5.5; //Enemy position
+    float x= 75, y, z = 45; //TESTING!!!!!!!!!!
     
     /*Set up the variable for the struct*/
     enemy.id = 1;
@@ -66,7 +68,8 @@ void setupEnemy() {
     enemy.dx = -0.1;  //Move down (south)
     enemy.zTarget = 1;   //Move right (east)
     enemy.xTarget = -1;  //Move down (south)
-    enemy.zSpot = 0;
+    enemy.zSpot = 0.0;
+    enemy.ySpot = 0.0;
     
 }
 
@@ -86,7 +89,7 @@ void updateEnemy() {
     float xPos, yPos, zPos; //Current enemy Position
     
     /*Get the current position of the enemy*/
-    getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
+    //getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
     //printf("The enemy created is at: %f, %f, %f \n", xPos, yPos, zPos);
     /*Determine if the enemy can move in that direction*/
     predictEnemyMove();
@@ -112,10 +115,60 @@ void getEnemyPosition(int number, float *x, float *y, float *z) {
 int predictEnemyMove() {
     float x, y, z;
     int xPos, yPos, zPos; //Current enemy Position
+    int tempX, tempY, tempZ; 
     
     /*Get the current position of the enemy*/
     getEnemyPosition(enemy.id, &x, &y, &z);
     
+    /*Determine if the enemy hits a cube*/
+    tempX = (int)floor(x + enemy.dx*2);   //x-direction and buffer space
+    tempZ = (int)floor(z + enemy.dz*2);   //z-direction and buffer space
+    tempY = (int)floor(y); 
+    
+    if (world[tempX][tempY][tempZ] != 0 && enemy.ySpot <= 0.0) {
+      printf("ENEMY HAS HIT A CUBE \n");
+      /*Determine if enemy can climb the cube*/
+      if (tempY + 1 < WORLDY) {  //Determine if enemy can climb 1 squares
+         if (world[tempX][tempY + 1][tempZ] == 0) {  //Climb one cube
+            /*enemy.dy = 0.1;
+            enemy.ySpot = 1.0;*/
+            printf("---climbed 1 \n");
+            setPlayerPosition(enemy.id, x + (enemy.dx*3), y + 1, z + (enemy.dz*3),0);
+         }
+         else {
+            printf("---Cannot climb 1\n");
+         }
+      }
+      else if (tempY + 2 < WORLDY) {   //Determine if enemy can climb 2 squares
+         if(world[tempX][tempY + 2][tempZ] == 0) {   //Attempt to climb two cubes
+            /*enemy.dy = 0.1;
+            enemy.ySpot = 2.0;*/
+            printf("---climbed 2 \n");
+            setPlayerPosition(enemy.id, x + (enemy.dx*3), y + 2, z  + (enemy.dx*3),0);
+         }
+         else {
+            printf("---Cannot climb 2\n");
+         }
+      }         
+      else {   //Cannot climb and would need to find a new way out
+         printf("---Cannot climb at all\n");
+      }
+    }
+    
+    /*Determine if there's a cube under the player*/
+    if (tempY > 0) {
+       /*Determine if there's a cube below the enemy*/
+       if ((world[tempX][tempY - 1][tempZ] == 0) && (enemy.ySpot <= 0.0)) {
+         //printf("There's no cube under enemy \n");
+         enemy.dy = -0.1;
+       }
+    }
+    
+    if (enemy.ySpot > 0.0) {  //NOT NECESSARY AS THE ENEMY NOW TELE TO THE NEXT BLOCK
+       //enemy.ySpot = enemy.ySpot - 0.1;
+    }
+    
+    /*Convert the direction to an integer*/
     xPos = (int)floor(x);
     zPos = (int)floor(z);
     
@@ -134,7 +187,12 @@ int predictEnemyMove() {
     else if (zPos <= 5 && enemy.zTarget == 1) { //Enemy can is planned to move east
         enemy.zTarget = -1;   //Update enemy position to move west
     }*/
-    printf("before direction = %f, %f \n", enemy.dx, enemy.dz);
+    
+    
+    
+    
+    
+    
     /*Determine mob direction*/
     if (enemy.dx != 0) {//Mob is going south or north
         enemy.dz = 0;
@@ -172,7 +230,7 @@ int predictEnemyMove() {
             enemy.zSpot -= 0.1;
         }
     }
-    printf("---after direction = %f, %f \n", enemy.dx, enemy.dz);
+    //printf("---after direction = %f, %f \n", enemy.dx, enemy.dz);
 }
 
 void enemyEastWestDir() {
@@ -196,7 +254,7 @@ void moveEnemy() {
     
     /*Get the current position of the enemy*/
     getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
-    printf("---old enemy position = %f, %f, %f \n", xPos, yPos, zPos);
+    //printf("---old enemy position = %f, %f, %f \n", xPos, yPos, zPos);
     xPos = xPos + enemy.dx;
     zPos = zPos + enemy.dz;
     
@@ -204,7 +262,7 @@ void moveEnemy() {
     setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
     
     //printf("New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
-    printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
+    //printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
 }
 
 
