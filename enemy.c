@@ -246,21 +246,100 @@ void moveEnemy() {
     //printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
 }
 
-/*Determine another route*/
+/*******************Determine another route*******************/
 void searchEPath() {
    /*Determine possible openings*/
-   if (enemy.dx < 0) {  //moving South
+   if (enemy.dx != 0) {  //moving South or North
+      dirSouthAndNorth();
    }
-   else if (enemy.dx < 0) {  //moving North
-   }
-   else if (enemy.dz > 0) {  //moving East
-   }
-   else if (enemy.dz < 0) {  //moving West
+   else if (enemy.dz != 0) {  //moving East or West
+      dirEastAndWest();
    }   
 }
 
 /*Determine which way to look for clearing*/
-void dirSouth() {
+// void dirSouth() {
+    // int found = 0; //Determine if a path has been found
+    // float x, y, z;
+    // int xPos, yPos, zPos; //Current enemy Position 
+    
+    // /*Get the current position of the enemy*/
+    // getEnemyPosition(enemy.id, &x, &y, &z);
+    
+    // /*Determine if the enemy hits a cube*/
+    // xPos = (int)floor(x);   
+    // yPos = (int)floor(y); 
+    // zPos = (int)floor(z);       
+    
+   // if (enemy.zTarget == 1) {  //If enemy is to be heading east
+      // if (enemy.zTarget > 0) {   //Check East
+         // found = lookEast(xPos, yPos, zPos);
+         
+         // if (found == 0) {
+            // found = lookEast(xPos, yPos + 1, zPos);
+         // }
+         
+         // if (found == 0) {
+            // found = lookEast(xPos, yPos + 2, zPos);
+         // }
+      // }
+      // else {   //Check West
+         // found = lookWest(xPos, yPos, zPos);
+         
+         // if (found == 0) {
+            // found = lookWest(xPos, yPos + 1, zPos);
+         // }
+         
+         // if (found == 0) {
+            // found = lookWest(xPos, yPos + 2, zPos);
+         // }
+      // }
+   // }
+   // else {   //If enemy is to be heading east      
+      // if (enemy.zTarget < 0) {   //Check West
+         // found = lookWest(xPos, yPos, zPos);
+         
+         // if (found == 0) {
+            // found = lookWest(xPos, yPos + 1, zPos);
+         // }
+         
+         // if (found == 0) {
+            // found = lookWest(xPos, yPos + 2, zPos);
+         // }
+      // }
+      // else {   //Check East
+         // found = lookEast(xPos, yPos, zPos);
+         
+         // if (found == 0) {
+            // found = lookEast(xPos, yPos + 1, zPos);
+         // }
+         
+         // if (found == 0) {
+            // found = lookEast(xPos, yPos + 2, zPos);
+         // }
+      // }
+   // }
+   
+   // if (found == 0) { //Check North
+      // found = lookNorth(xPos, yPos, zPos);
+         
+      // if (found == 0) {
+         // found = lookNorth(xPos, yPos + 1, zPos);
+      // }
+      
+      // if (found == 0) {
+         // found = lookNorth(xPos, yPos + 2, zPos);
+      // }
+      
+      // if (found == 0) {    //Enemy is trapped
+         // printf("Enemy cannot move \n");
+         // enemy.dx = 0;
+         // enemy.dz = 0;
+      // }
+   // }
+// }
+
+void dirSouthAndNorth() {
     int found = 0; //Determine if a path has been found
     float x, y, z;
     int xPos, yPos, zPos; //Current enemy Position 
@@ -274,8 +353,7 @@ void dirSouth() {
     zPos = (int)floor(z);       
     
    if (enemy.zTarget == 1) {  //If enemy is to be heading east
-      //Check East
-      if (enemy.zTarget > 0) {
+      if (enemy.zTarget > 0) {   //Check East
          found = lookEast(xPos, yPos, zPos);
          
          if (found == 0) {
@@ -286,19 +364,260 @@ void dirSouth() {
             found = lookEast(xPos, yPos + 2, zPos);
          }
       }
-      else {
+      else {   //Check West
+         found = lookWest(xPos, yPos, zPos);
+         
+         if (found == 0) {
+            found = lookWest(xPos, yPos + 1, zPos);
+         }
+         
+         if (found == 0) {
+            found = lookWest(xPos, yPos + 2, zPos);
+         }
       }
-      
-      //Check West
    }
-   else {   //If enemy is to be heading east
-      //Check East
-      //Check West
+   else {   //If enemy is to be heading east      
+      if (enemy.zTarget < 0) {   //Check West
+         found = lookWest(xPos, yPos, zPos);
+         
+         if (found == 0) {
+            found = lookWest(xPos, yPos + 1, zPos);
+         }
+         
+         if (found == 0) {
+            found = lookWest(xPos, yPos + 2, zPos);
+         }
+      }
+      else {   //Check East
+         found = lookEast(xPos, yPos, zPos);
+         
+         if (found == 0) {
+            found = lookEast(xPos, yPos + 1, zPos);
+         }
+         
+         if (found == 0) {
+            found = lookEast(xPos, yPos + 2, zPos);
+         }
+      }
    }
    
-   if (found == 0) { //Check North
+   if (enemy.xTarget > 0 && found == 0) { //Check North
+      found = lookNorth(xPos, yPos, zPos);
+         
+      if (found == 0) {
+         found = lookNorth(xPos, yPos + 1, zPos);
+      }
+      
+      if (found == 0) {
+         found = lookNorth(xPos, yPos + 2, zPos);
+      }
+      
+      if (found == 0) {    //Enemy is trapped
+         printf("Enemy cannot move \n");
+         enemy.dx = 0;
+         enemy.dz = 0;
+      }
+   }
+   else if (enemy.xTarget < 0 && found == 0){
+      found = lookSouth(xPos, yPos, zPos);
+         
+      if (found == 0) {
+         found = lookSouth(xPos, yPos + 1, zPos);
+      }
+      
+      if (found == 0) {
+         found = lookSouth(xPos, yPos + 2, zPos);
+      }
+      
+      if (found == 0) {    //Enemy is trapped
+         printf("Enemy cannot move \n");
+         enemy.dx = 0;
+         enemy.dz = 0;
+      }
    }
 }
+
+
+/*Determine which way to look for clearing when moving East or West*/
+void dirEastAndWest() {
+   int found = 0; //Determine if a path has been found
+    float x, y, z;
+    int xPos, yPos, zPos; //Current enemy Position 
+    
+    /*Get the current position of the enemy*/
+    getEnemyPosition(enemy.id, &x, &y, &z);
+    
+    /*Determine if the enemy hits a cube*/
+    xPos = (int)floor(x);   
+    yPos = (int)floor(y); 
+    zPos = (int)floor(z);       
+    
+   if (enemy.xTarget == 1) {  //If enemy is to be heading North
+      if (enemy.xTarget > 0) {   //Check North
+         found = lookNorth(xPos, yPos, zPos);
+         
+         if (found == 0) {
+            found = lookNorth(xPos, yPos + 1, zPos);
+         }
+         
+         if (found == 0) {
+            found = lookNorth(xPos, yPos + 2, zPos);
+         }
+      }
+      else {   //Check South
+         found = lookSouth(xPos, yPos, zPos);
+         
+         if (found == 0) {
+            found = lookSouth(xPos, yPos + 1, zPos);
+         }
+         
+         if (found == 0) {
+            found = lookSouth(xPos, yPos + 2, zPos);
+         }
+      }
+   }
+   else {   //If enemy is to be heading east      
+      if (enemy.xTarget < 0) {   //Check South
+         found = lookSouth(xPos, yPos, zPos);
+         
+         if (found == 0) {
+            found = lookSouth(xPos, yPos + 1, zPos);
+         }
+         
+         if (found == 0) {
+            found = lookSouth(xPos, yPos + 2, zPos);
+         }
+      }
+      else {   //Check East
+         found = lookNorth(xPos, yPos, zPos);
+         
+         if (found == 0) {
+            found = lookNorth(xPos, yPos + 1, zPos);
+         }
+         
+         if (found == 0) {
+            found = lookNorth(xPos, yPos + 2, zPos);
+         }
+      }
+   }
+   
+   if (enemy.zTarget > 0 && found == 0) { //Check East
+      found = lookEast(xPos, yPos, zPos);
+         
+      if (found == 0) {
+         found = lookEast(xPos, yPos + 1, zPos);
+      }
+      
+      if (found == 0) {
+         found = lookEast(xPos, yPos + 2, zPos);
+      }
+      
+      if (found == 0) {    //Enemy is trapped
+         printf("Enemy cannot move \n");
+         enemy.dx = 0;
+         enemy.dz = 0;
+      }
+   }
+   else if (enemy.zTarget < 0 && found == 0){   //Check West
+      found = lookWest(xPos, yPos, zPos);
+         
+      if (found == 0) {
+         found = lookWest(xPos, yPos + 1, zPos);
+      }
+      
+      if (found == 0) {
+         found = lookWest(xPos, yPos + 2, zPos);
+      }
+      
+      if (found == 0) {    //Enemy is trapped
+         printf("Enemy cannot move \n");
+         enemy.dx = 0;
+         enemy.dz = 0;
+      }
+   }
+}
+
+/*Determine which way to look for clearing*/
+// void dirNorth() {
+    // int found = 0; //Determine if a path has been found
+    // float x, y, z;
+    // int xPos, yPos, zPos; //Current enemy Position 
+    
+    // /*Get the current position of the enemy*/
+    // getEnemyPosition(enemy.id, &x, &y, &z);
+    
+    // /*Determine if the enemy hits a cube*/
+    // xPos = (int)floor(x);   
+    // yPos = (int)floor(y); 
+    // zPos = (int)floor(z);       
+    
+   // if (enemy.zTarget == 1) {  //If enemy is to be heading east
+      // if (enemy.zTarget > 0) {   //Check East
+         // found = lookEast(xPos, yPos, zPos);
+         
+         // if (found == 0) {
+            // found = lookEast(xPos, yPos + 1, zPos);
+         // }
+         
+         // if (found == 0) {
+            // found = lookEast(xPos, yPos + 2, zPos);
+         // }
+      // }
+      // else {   //Check West
+         // found = lookWest(xPos, yPos, zPos);
+         
+         // if (found == 0) {
+            // found = lookWest(xPos, yPos + 1, zPos);
+         // }
+         
+         // if (found == 0) {
+            // found = lookWest(xPos, yPos + 2, zPos);
+         // }
+      // }
+   // }
+   // else {   //If enemy is to be heading east      
+      // if (enemy.zTarget < 0) {   //Check West
+         // found = lookWest(xPos, yPos, zPos);
+         
+         // if (found == 0) {
+            // found = lookWest(xPos, yPos + 1, zPos);
+         // }
+         
+         // if (found == 0) {
+            // found = lookWest(xPos, yPos + 2, zPos);
+         // }
+      // }
+      // else {   //Check East
+         // found = lookEast(xPos, yPos, zPos);
+         
+         // if (found == 0) {
+            // found = lookEast(xPos, yPos + 1, zPos);
+         // }
+         
+         // if (found == 0) {
+            // found = lookEast(xPos, yPos + 2, zPos);
+         // }
+      // }
+   // }
+   
+   // if (found == 0) { //Check North
+      // found = lookNorth(xPos, yPos, zPos);
+         
+      // if (found == 0) {
+         // found = lookNorth(xPos, yPos + 1, zPos);
+      // }
+      
+      // if (found == 0) {
+         // found = lookNorth(xPos, yPos + 2, zPos);
+      // }
+      
+      // if (found == 0) {    //Enemy is trapped
+         // printf("Enemy cannot move \n");
+         // enemy.dx = 0;
+         // enemy.dz = 0;
+      // }
+   // }
+// }
 
 
 /*Enemy Look East for a clearing
@@ -377,4 +696,4 @@ int lookSouth(int x, int y, int z) {
    return 0;   //No new path possible
 }
 
-/*Search algorithm*/
+/*******************Search algorithm*******************/
