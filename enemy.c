@@ -34,11 +34,14 @@ char* lrDir = "east";
 /* list of players - number of mobs, xyz values and rotation about y */
 extern float playerPosition[MOB_COUNT][4];
 
-/* player controls */
+/* Enemy/Player controls */
 extern void createPlayer(int, float, float, float, float);
 extern void setPlayerPosition(int, float, float, float, float);
 extern void hidePlayer(int);
 extern void showPlayer(int);
+
+/*User/Player setting*/
+extern void getViewPosition(float*, float*, float*);
 
 /*Place enemy onto the world*/
 void setupEnemy() {
@@ -91,12 +94,17 @@ void updateEnemy() {
     /*Get the current position of the enemy*/
     getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
     //printf("The enemy created is at: %f, %f, %f \n", xPos, yPos, zPos);
+    
+    /*Determine if the enemy spots the player*/
+    searchForPlayer();
+    
+    /*****Search mode******/
     /*Determine if the enemy can move in that direction*/
-    predictEnemyMove();
+    //predictEnemyMove();
     
     
     /*Update the enemy position in the game world*/
-    moveEnemy();
+    //moveEnemy();
     
     /*Draw enemy to the screen*/
     //setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
@@ -125,7 +133,7 @@ int predictEnemyMove() {
     tempZ = (int)floor(z + enemy.dz*2);   //z-direction and buffer space
     tempY = (int)floor(y); 
     //printf("Enemy current position is at: %f, %f, %f \n", x,y,z);
-    printf("---before direction = %f, %f, %f \n", enemy.dx*3, enemy.dy, enemy.dz*3);
+    //printf("---before direction = %f, %f, %f \n", enemy.dx*3, enemy.dy, enemy.dz*3);
     if (world[tempX][tempY][tempZ] != 0 && enemy.ySpot <= 0.0) {
       printf("ENEMY HAS HIT A CUBE \n");
       /*Determine if enemy can climb the cube*/
@@ -161,7 +169,7 @@ int predictEnemyMove() {
     }
     
     /*Determine if there's a cube under the player*/
-    printf("tempY = %d, %d, %d \n",tempY,world[tempX][tempY - 1][tempZ] ,world[tempX][tempY - 2][tempZ] );
+    //printf("tempY = %d, %d, %d \n",tempY,world[tempX][tempY - 1][tempZ] ,world[tempX][tempY - 2][tempZ] );
     if (tempY > 0) {
        /*Determine if there's a cube below the enemy*/
        if ((world[tempX][tempY - 2][tempZ] == 0)) {
@@ -218,7 +226,7 @@ int predictEnemyMove() {
             enemy.zSpot -= 0.1;
         }
     }
-    printf("---after direction = %f, %f, %f \n", enemy.dx, enemy.dy, enemy.dz);
+    //printf("---after direction = %f, %f, %f \n", enemy.dx, enemy.dy, enemy.dz);
 }
 
 void enemyEastWestDir() {
@@ -243,7 +251,7 @@ void moveEnemy() {
     /*Get the current position of the enemy*/
     getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
     
-    printf("before New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
+    //printf("before New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
     
     //printf("---old enemy position = %f, %f, %f \n", xPos, yPos, zPos);
     xPos = xPos + enemy.dx;
@@ -251,15 +259,15 @@ void moveEnemy() {
     yPos = yPos + enemy.dy;
     
     if (enemy.dy >= 0.0) {
-        printf("enemy.dy  = %f", enemy.dy );
+        //printf("enemy.dy  = %f", enemy.dy );
         yPos = floor(yPos);
     }
     
     /*Move the enemy based on the direction*/
     setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
     
-    printf("New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
-    printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
+    //printf("New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
+    //printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
 }
 
 /*******************Determine another route*******************/
@@ -558,23 +566,50 @@ int searchForPlayer() {
    
    int darive; //Darivative of a line
    
+   /*Get cordinates*/
+    getEnemyPosition(enemy.id, &ex, &ey, &ez);  //Enemy position
+    getViewPosition(&px, &py, &pz);
+    
+    /*Convert player cordinates to be positive values*/
+    px *= -1;
+    py *= -1;
+    pz *= -1;
+    
    /*Get the vector line*/
    dVecX = ex - px;
-   dVecY = ey - py;
+   dVecY = floor(py) - floor(ey);
    dVecZ = ez - pz;
    
    /*Determine if the enemy is facing the player*/
    if (abs(dVecX) <= 50 && abs(dVecZ) <= 50) {
-      if ((enemy.dx > 0 && px >= ex) ||
+      /*if ((enemy.dx > 0 && px >= ex) ||
             (enemy.dx < 0 && px <= ex) ||
             (enemy.dz > 0 && pz >= ez) ||
             (enemy.dz > 0 && pz <= ez)) {
-      }
+          printf("sees the player \n");
+      }*/
+       if ((enemy.dx > 0 && px >= ex)){
+       printf("sees the player 1\n");
+       }
+       else if (enemy.dx < 0 && px <= ex) {
+       printf("sees the player 2\n");
+       }
+       else if (enemy.dz > 0 && pz >= ez) {
+       printf("sees the player 3\n");
+       }
+       else if (enemy.dz > 0 && pz <= ez) {
+           printf("sees the player 4\n");
+       }
       else {
+          printf("NO Dosn't see \n");
          return 0;   //Player not spotted
       }
    }
-   
+   else {
+       printf("NO Dosn't see \n");
+       return 0;   //Player not spotted
+   }
+    
    /*Get the darivative of the vector lines*/
    darive = sqrt(dVecX*dVecX + dVecY*dVecY + dVecZ*dVecZ);
    
@@ -586,16 +621,25 @@ int searchForPlayer() {
    /*Set up the displacement cord variable*/
    ix = ex;
    iy = ey;
-   iz = iz;
-   
+   iz = ez;
+    printf("dVec = %f, %f, %f \n", dVecX, dVecY, dVecZ);
+    printf("---darive = %d, dir= %f, %f, %f \n", darive, dirX, dirY, dirZ );
+    printf("---ix = %f, %f, %f \n", ix, iy, iz);
+    printf("-------playerCord %f, %f, %f\n", px, py, pz);
+    printf("-------enemyCord %f, %f, %f\n", ex, ey, ez);
    /*Search for player*/
    while(1) {
       ix = ix + dirX;
       iy = iy + dirY;
       iz = iz + dirZ;
       
-      if (world[(int)ix][(int)iy][(int)iz]) {
-         printf("Path is blocked to player\n");
+      if ((int)ix > WORLDX || (int)ix < 0 || (int)iz > WORLDZ || (int)iz < 0 || (int)iy > WORLDY || (int)iy < 0) {
+           //printf("array out of bound issue %f, %f, %f\n", ix, iy, iz);
+           break;
+      }
+       
+      if (world[(int)ix][(int)iy][(int)iz] != 0) {
+         printf("Path is blocked to player --- block=%d --- ix = %f, %f, %f\n", world[(int)ix][(int)iy][(int)iz], ix, iy, iz);
          return 0;
       }
       else if (ix >= px && iy >= py && iz >= pz) {
