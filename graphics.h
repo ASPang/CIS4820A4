@@ -104,6 +104,7 @@ void *clientThread(void *);
 //void updateEnemy();
 void setupEnemy();
 void moveEnemy();
+void updateEnemy();
 
 void getEnemyPosition(int, float*, float*, float*);
 
@@ -123,3 +124,5 @@ int followPlayer();
 
 int fireTimer();
 int lostPlayerCountDown();
+
+void showHitMessage(int, char*);

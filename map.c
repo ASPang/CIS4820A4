@@ -5,6 +5,11 @@
 
 #include "graphics.h"
 
+/*Screen Messages*/
+extern int msgHitDirect;
+extern int msgHitInDirect;
+
+/*Network Server Client*/
 extern int netClient;
 
 	/* 2D drawing functions */
@@ -266,3 +271,61 @@ void addCordToMap(int mX, int mY, char *str, int strLen) {
    }
 }
 
+
+/*Draw Message to Screen about Hits*/
+void showHitMessage(int strLen, char * str) {
+    int x = 450, y = 300;   //Message screen location
+    int i;
+    /*Set the text colour*/
+    GLfloat red[] = {0.5, 0.0, 0.0, 0.9};
+    set2Dcolour(red);
+    
+    /*Set text position*/
+    glRasterPos2i(x, y);
+    
+    /*Display text to screen*/
+    for (i = 0; i < strLen; i++) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, str[i]);
+    }
+}
+
+
+/*Counts down to when the AI can shoot again*/
+int pauseMsgOnScreen() {
+    static clock_t updateStart;
+    clock_t updateEnd;
+    static int resetTime = 1;
+    int milsec = 10000; //Milliseconds;
+    double diff;
+    
+    struct timeval  tv;
+    double time_in_mill;
+    
+    gettimeofday(&tv, NULL);
+    /*Determine if the timer has been set*/
+    if (resetTime == 1) {
+        /*Reset the timer*/
+        resetTime = 0;
+        
+        time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+        
+        updateStart = time_in_mill;
+        
+    }
+    else if (resetTime == 0) {
+        /*Determine if 0.08 second has passed*/
+        time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+        
+        updateEnd = time_in_mill;
+        diff = ((updateEnd - updateStart));
+        
+        if (diff >= 5000) {
+            resetTime = 1;  //Reset the timer
+            msgHitDirect = 0;
+            msgHitInDirect = 0;
+            return 1;
+        }
+    }
+    
+    return 0;   //Don't update the function
+}

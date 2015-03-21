@@ -15,6 +15,10 @@
 
 #include "graphics.h"
 
+/*Projectile Message*/
+int msgHitDirect = 0;
+int msgHitInDirect = 0;
+
 /*Enemy information struct*/
 extern struct enemyStruct {
     float dx;
@@ -331,6 +335,15 @@ void draw2D() {
             
             /*Draw the map area*/
             drawMapArea(mX1, mY1, mX2, mY2, mSize);
+        }
+        
+        /*Messages*/
+        pauseMsgOnScreen();
+        if (msgHitDirect) {        
+            showHitMessage(12, "Direct Hit!");
+        }
+        else if (msgHitInDirect) {
+            showHitMessage(14, "Indirect Hit!");
         }
     }
 }
@@ -719,10 +732,14 @@ void objectCollision() {
                     if (hit == 0) {
                         if (indirectHit(projectile[i][10], xPos, yPos, zPos)) {
                             printf("Indirect Hit! \n-----\n");
+                            msgHitInDirect = 1;
+                            msgHitDirect = 0;
                         }
                     }
                     else if (hit == 1) {
                         printf("Direct Hit! \n-----\n");
+                        msgHitDirect = 1;
+                        msgHitInDirect = 0;
                     }
                     
                     hit = 0;
