@@ -1,5 +1,10 @@
-Modifications For Assignment 3 By Angela Pang
+Modifications For Assignment 4 By Angela Pang
 -------------------------------------------------
+Game Bugs and Limitations
+---------------------------
+-There's the rare occasion that the mob would end up in the mountain/terrain when it flees/move mode.
+
+
 Compiling the Game
 -------------------
 Run the makefile with the following command.
@@ -38,17 +43,25 @@ Use the arrow keys in order to navigate through the world.
 [A] Stride left.
 [D] Stride right.
 
+Jump:
+Use the space bar to jump and get on cubes where they two high. There's a cool down rate of 5 seconds. HINT: Press against the wall when jumping to ensure that you get onto the cube.
+[Space Bar] Jump
+
 Shooting-Angle:
 Click the right mouse button and drag up or down to set the angle between 0 and 90.
 
 Shooting-Projectile speed:
-Default speed is 0.6. Click the right mouse button and drag right to increase the speed to maximum of 1.0. Drag left to decrease the speed to 0.0. 
+Default speed is 0.6. Click the right mouse button and drag right to increase the speed to maximum of 1.0. Drag left to decrease the speed to 0.0. When landing a projectile at an enemy the message "Direct Hit!" will be displayed. If the shot was 2 cubes away from the crater 
 
 Shooting-Launch Projectile: 
 Click the left mouse button to launch the projectile in the direction you're facing.
+Enemy on the map will run away from the projectiles shot.
 
 Map:
 [M] Toggle between different maps. By default a map at the top right corner is displayed, then the next one will be a larger map displayed, and last option is no map. 
+
+MOB/Enemy/Opponent:
+A single enemy would roam around in the game world. It moves in an S pattern and up down the world map. It has a 50 square block vision with a 180 degree, as a result if a player is hovering in the sky the enemy will notice and attempt to shoot. When shooting it would remain in one spot. When shot at the enemy would be running and can go over 1 or 2 cubes when necessary.
 
 
 
