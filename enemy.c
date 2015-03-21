@@ -84,6 +84,9 @@ void enemyMode() {
     float x, y, z;
     float orient;
     
+    /*Determine if the enemy is in danger*/
+    dangerousProj();
+    
     /*Determine what mode the enemy is in*/
     if (enemy.mode == 0) { //Search mode
         updateEnemy();
@@ -102,32 +105,26 @@ void enemyMode() {
         }
     }
     else if (enemy.mode == 2) {    //Run away
+        /*Determine if the enemy can move in that direction*/
+        predictEnemyMove();
+                
+        /*Update the enemy position in the game world*/
+        moveEnemy();
         
+        enemy.mode = 0;
     }
 }
 
 /*Update enemy in the world*/
-void updateEnemy() {
-    float xPos, yPos, zPos; //Current enemy Position
-    
-    /*Get the current position of the enemy*/
-    //getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
-    //printf("The enemy created is at: %f, %f, %f \n", xPos, yPos, zPos);
-    
+void updateEnemy() {    
     /*Determine if the enemy spots the player*/
     searchForPlayer();
     
-    /*****Search mode******/
     /*Determine if the enemy can move in that direction*/
     predictEnemyMove();
-    
-    
+        
     /*Update the enemy position in the game world*/
     moveEnemy();
-    
-    /*Draw enemy to the screen*/
-    //setPlayerPosition(enemy.id, xPos, yPos, zPos, 0);
-    //showPlayer(1);
 }
 
 
@@ -154,54 +151,38 @@ int predictEnemyMove() {
     //printf("Enemy current position is at: %f, %f, %f \n", x,y,z);
     //printf("---before direction = %f, %f, %f \n", enemy.dx*3, enemy.dy, enemy.dz*3);
     if (world[tempX][tempY][tempZ] != 0 && enemy.ySpot <= 0.0) {
-      printf("ENEMY HAS HIT A CUBE \n");
       /*Determine if enemy can climb the cube*/
         if (tempY + 1 < WORLDY) {  //Determine if enemy can climb 1 squares
             if (world[tempX][tempY + 1][tempZ] == 0) {  //Climb one cube
-                /*enemy.dy = 0.1;
-                 enemy.ySpot = 1.0;*/
-                printf("---climbed 1 \n");
                 setPlayerPosition(enemy.id, x + (enemy.dx*3), y + 1, z + (enemy.dz*3),0);
             }
             else {
-                printf("---Cannot climb 1\n");
+                searchEPath();
             }
         }
         if (tempY + 2 < WORLDY) {   //Determine if enemy can climb 2 squares
             if(world[tempX][tempY + 2][tempZ] == 0) {   //Attempt to climb two cubes
-                /*enemy.dy = 0.1;
-                 enemy.ySpot = 2.0;*/
-                printf("---climbed 2 \n");
                 setPlayerPosition(enemy.id, x + (enemy.dx*3), y + 2, z  + (enemy.dz*3),0);
             }
             else {
-                printf("---Cannot climb 2\n");
+                searchEPath();
             }
         }
-         
-               
       else {   //Cannot climb and would need to find a new way out
-         printf("---Cannot climb at all going to determine a brand new path\n");
          /*Determine another path*/
          searchEPath();
       }
     }
     
     /*Determine if there's a cube under the player*/
-    //printf("tempY = %d, %d, %d \n",tempY,world[tempX][tempY - 1][tempZ] ,world[tempX][tempY - 2][tempZ] );
-    if (tempY > 1) {
+        if (tempY > 1) {
        /*Determine if there's a cube below the enemy*/
        if ((world[tempX][tempY - 1][tempZ] == 0)) {
-         printf("There's no cube under enemy \n");
          enemy.dy = -0.12;
        }
        else {
            enemy.dy = 0;
        }
-    }
-    
-    if (enemy.ySpot > 0.0) {  //NOT NECESSARY AS THE ENEMY NOW TELE TO THE NEXT BLOCK
-       //enemy.ySpot = enemy.ySpot - 0.1;
     }
     
     /*Convert the direction to an integer*/
@@ -245,7 +226,6 @@ int predictEnemyMove() {
             enemy.zSpot -= 0.1;
         }
     }
-    //printf("---after direction = %f, %f, %f \n", enemy.dx, enemy.dy, enemy.dz);
 }
 
 void enemyEastWestDir() {
@@ -271,24 +251,18 @@ void moveEnemy() {
     /*Get the current position of the enemy*/
     getEnemyPosition(enemy.id, &xPos, &yPos, &zPos);
     
-    //printf("before New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
-    
-    //printf("---old enemy position = %f, %f, %f \n", xPos, yPos, zPos);
     xPos = xPos + enemy.dx;
     zPos = zPos + enemy.dz;
     yPos = yPos + enemy.dy;
     
     if (enemy.dy >= 0.0) {
-        //printf("enemy.dy  = %f", enemy.dy );
         yPos = floor(yPos);
     }
     
     orient = (float)enemyFace();
+    
     /*Move the enemy based on the direction*/
     setPlayerPosition(enemy.id, xPos, yPos, zPos, orient);
-    
-    //printf("New enemy direction = %f, %f \n", enemy.dx, enemy.dz);
-    //printf("---New enemy position = %f, %f, %f \n", xPos, yPos, zPos);
 }
 
 /*Determine the direction it should face*/
@@ -422,7 +396,6 @@ void dirSouthAndNorth() {
       }
       
       if (found == 0) {    //Enemy is trapped
-         printf("Enemy cannot move \n");
          enemy.dx = 0;
          enemy.dz = 0;
       }
@@ -439,7 +412,6 @@ void dirSouthAndNorth() {
       }
       
       if (found == 0) {    //Enemy is trapped
-         printf("Enemy cannot move \n");
          enemy.dx = 0;
          enemy.dz = 0;
       }
@@ -522,7 +494,6 @@ void dirEastAndWest() {
       }
       
       if (found == 0) {    //Enemy is trapped
-         printf("Enemy cannot move \n");
          enemy.dx = 0;
          enemy.dz = 0;
       }
@@ -539,7 +510,6 @@ void dirEastAndWest() {
       }
       
       if (found == 0) {    //Enemy is trapped
-         printf("Enemy cannot move \n");
          enemy.dx = 0;
          enemy.dz = 0;
       }
@@ -732,8 +702,7 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         
         /*Get the speed*/
         speed = (fabsf(dx) + fabsf(dz)) / 2;
-        //printf("fabsf(dx), fabsf(dz), speed = %f,%f,%f\n", fabsf(dx),fabsf(dz),speed);
-    
+        
         /*Determine the angle to fire*/
         angle = 45.0;
     
@@ -842,6 +811,7 @@ int lostPlayerCountDown() {
     return 0;   //Don't update the function
 }
 
+/*Enemy rotates along with the player*/
 int followPlayer() {
     float hypot, oriAngle;
     float x, y, z;
@@ -874,13 +844,11 @@ int followPlayer() {
     else if(enemyQuad() == 180 && oriAngle < 90) {
         orient = 90 + oriAngle;
     }
-    
-    //printf("oriangle, orient,EnemyFaceOpponent, enemyQuad = %f,%d,%d,%d,%f,%f,%f \n", oriAngle, orient, EnemyFaceOpponent(), enemyQuad(), (oriAngle+EnemyFaceOpponent()-180), enemy.dx, enemy.dz);
         
-    
     return orient;
 }
 
+/*Determine which quadrant the player falls under against the enemy*/
 int enemyQuad() {
     float px, py, pz;
     float ex, ey, ez;
@@ -899,26 +867,34 @@ int enemyQuad() {
     /*Return the quadrant based on the quadrant*/
     if (px < ex && pz <= ez) {   //Quadrant 4
         enemy.dx = -0.1;
-        //enemy.dz = 0;
         return 270;
     }
     else if (px <= ex && pz > ez) {  //Quadrant 3
         enemy.dz = 0.1;
-        //enemy.dx = 0;
         return 360;
     }
     else if (px > ex && pz >= ez) {  //Quadrant 2
         enemy.dx = 0.1;
-        //enemy.dz = 0;
         return 90;
     }
     else if (px >= ex && pz < ez) {  //Quadrant 1
         enemy.dz = -0.1;
-        //enemy.dx = 0;
         return 180;
     }
 }
 
+/*Determines if the enemy is getting shot at by the player*/
+void dangerousProj() {
+    int i;
+    
+    /*Determine if there are any projectiles launched*/
+    for (i = 0; i < 10; i++) {
+        if (projectile[i][10] == 0) {
+            enemy.mode = 2;
+            break;
+        }
+    }
+}
 
 
 

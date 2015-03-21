@@ -1178,9 +1178,6 @@ int i, j, k;
        
        /*Create the enemy*/
        setupEnemy();
-       
-       /*TESTING*/
-       //setViewPosition(-50,-1,-50);
    }
 
 
