@@ -20,7 +20,7 @@ int msgHitDirect = 0;
 int msgHitInDirect = 0;
 
 /*Enemy information struct*/
-extern struct enemyStruct {
+extern struct enemyStruct{
     float dx;
     float dy;
     float dz;
@@ -30,9 +30,8 @@ extern struct enemyStruct {
     int xTarget;
     int mode;
     int id;
-};
+} enemy;
 
-extern struct enemyStruct enemy;;
 
 /*Game Enemy Function*/
 extern void setupEnemy();

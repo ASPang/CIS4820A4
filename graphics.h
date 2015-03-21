@@ -117,12 +117,13 @@ void enemyFireProj(float, float, float, float, float);
 int directHit(float, int, int, int);
 int hitResult(float, float, float, int, int, int);
 int indirectHit(int, int, int, int);
+void dangerousProj();
 
 int enemyQuad();
-
 int followPlayer();
+void showHitMessage(int, char*);
 
 int fireTimer();
 int lostPlayerCountDown();
 
-void showHitMessage(int, char*);
+

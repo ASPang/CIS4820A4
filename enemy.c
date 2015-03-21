@@ -50,8 +50,7 @@ extern void getViewPosition(float*, float*, float*);
 /*Place enemy onto the world*/
 void setupEnemy() {
     int i = 0;
-    //float x=95, y, z = 5; //Enemy position
-    float x= 75, y, z = 45; //TESTING!!!!!!!!!!
+    float x=90, y, z = 15; //Enemy position
     
     /*Set up the variable for the struct*/
     enemy.id = 1;
@@ -701,7 +700,7 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         oriAngle = asin(z/hypot) * 180.0f / M_PI;
         
         /*Get the speed*/
-        speed = (fabsf(dx) + fabsf(dz)) / 2;
+        speed = 0.5;
         
         /*Determine the angle to fire*/
         angle = 45.0;
