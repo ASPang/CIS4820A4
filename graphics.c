@@ -563,7 +563,7 @@ void keyboard(unsigned char key, int x, int y)
 {
 float rotx, roty;
 static int lighton = 1;
-
+  float xPos, yPos, zPos;  
    switch (key) {
       case 27:
       case 'q':
@@ -672,7 +672,12 @@ static int lighton = 1;
          }
          break;
       case ' ':		// toggle dig flag, used to indicate user wants to dig
-         dig = 1;
+         /*Space bar*/
+         //dig = 1;
+         if (jumpTimer() && flycontrol == 0) {
+           getViewPosition(&xPos, &yPos, &zPos);
+           setViewPosition(xPos, yPos - 2.6, zPos);
+         }
          break;
       case 'm':		// toggle map display, 0=none, 1=small, 2=large
          displayMap++;
@@ -837,3 +842,40 @@ void  set2Dcolour(float colourv[]) {
    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colourv);
 }
 
+
+/*Counts down to when the player can jump again*/
+int jumpTimer() {
+    static clock_t updateStart;
+    clock_t updateEnd;
+    static int resetTime = 1;
+    int milsec = 10000; //Milliseconds;
+    double diff;
+    
+    struct timeval  tv;
+    double time_in_mill;
+    
+    gettimeofday(&tv, NULL);
+    /*Determine if the timer has been set*/
+    if (resetTime == 1) {
+        /*Reset the timer*/
+        resetTime = 0;
+        
+        time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+        
+        updateStart = time_in_mill;
+        return 1;
+    }
+    else if (resetTime == 0) {
+        /*Determine if 0.08 second has passed*/
+        time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+        
+        updateEnd = time_in_mill;
+        diff = ((updateEnd - updateStart));
+        
+        if (diff >= 12000) {
+            resetTime = 1;  //Reset the timer
+        }
+    }
+    
+    return 0;   //Don't update the function
+}

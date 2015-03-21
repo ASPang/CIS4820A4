@@ -717,8 +717,6 @@ void objectCollision() {
                     
                     /*Inform users of any indirect hit projectiles*/
                     if (hit == 0) {
-                        /************/
-                        printf("before going %d,%d,%d\n", xPos, yPos, zPos);
                         if (indirectHit(projectile[i][10], xPos, yPos, zPos)) {
                             printf("Indirect Hit! \n-----\n");
                         }
@@ -753,27 +751,23 @@ int directHit(float proj, int cx, int cy, int cz) {
     y = fabsf(y);   //Convert the y value to a postitive value
     
     if (hitResult(x, y, z, cx, cy+1, cz)) {
-        printf("HERE*****c1\n");
         return 1;
     }
     
     if (y - 1 > 0) {
         if (hitResult(x, y-1, z, cx, cy, cz)) {
-            printf("HERE*****y1\n");
             return 1;
         }
     }
     
     if (y - 2 > 0) {
         if (hitResult(x, y-2, z, cx, cy, cz)) {
-            printf("HERE*****y2\n");
             return 1;
         }
     }
     
     if (y - 3 > 0) {
         if (hitResult(x, y-3, z, cx, cy, cz)) {
-            printf("HERE*****y3\n");
             return 1;
         }
     }
@@ -788,10 +782,8 @@ int hitResult(float x, float y, float z, int cx, int cy, int cz) {
     ix = abs((int)floor(x));
     iy = abs((int)floor(y));
     iz = abs((int)floor(z));
-    //printf("hitresult player - %d,%d,%d\n", ix, iy, iz);
-    //printf("---hitresult %d,%d,%d\n", cx, cy, cz);
+    
     if (ix == cx && iy == cy && iz == cz) {
-        printf("HERE*****\n");
         return 1;
     }
     
@@ -799,10 +791,8 @@ int hitResult(float x, float y, float z, int cx, int cy, int cz) {
     ix = abs((int)floor(x));
     iy = abs((int)floor(y));
     iz = abs((int)floor(z));
-    //printf("hitresult player - %d,%d,%d\n", ix, iy, iz);
-    //printf("---hitresult %d,%d,%d\n", cx, cy, cz);
+    
     if (ix == cx && iy == cy && iz == cz) {
-        printf("HERE2*****\n");
         return 1;
     }
     
@@ -830,35 +820,29 @@ int indirectHit(int proj, int cx, int cy, int cz) {
     else {  //Enemy's projectile
         getViewPosition(&x, &y, &z);
     }
-    
-    printf("cx, int cy, int cz = %d, %d, %d \n", cx, cy, cz);
-        
+            
     y = fabsf(y);   //Convert the y value to a postitive value
     
     /*Determine if the character is in any of the indirect squares*/
     for (c = 0; c < 162; c += 2) {        
         if (hitResult(x, y, z, cx + aoe[c], cy+1, cz+ aoe[c+1])) {
-            printf("HERE*****c12\n");
             return 1;
         }
         
         if (y - 1 > 0) {
             if (hitResult(x, y-1, z, cx+aoe[c], cy, cz+aoe[c+1])) {
-                printf("HERE*****y12\n");
                 return 1;
             }
         }
         
         if (y - 2 > 0) {
             if (hitResult(x, y-2, z, cx+aoe[c], cy, cz+aoe[c+1])) {
-                printf("HERE*****y22\n");
                 return 1;
             }
         }
         
         if (y - 3 > 0) {
             if (hitResult(x, y-3, z, cx+aoe[c], cy, cz+aoe[c+1])) {
-                printf("HERE*****y32\n");
                 return 1;
             }
         }
@@ -1179,7 +1163,7 @@ int i, j, k;
        setupEnemy();
        
        /*TESTING*/
-       setViewPosition(-50,-1,-50);
+       //setViewPosition(-50,-1,-50);
    }
 
 
@@ -1193,7 +1177,7 @@ int i, j, k;
 void landscape() {
     grassLand();   //Add a bottom to the world
     waterFlow();   //Add body of water
-    //mountainTops(); //Add terrain
+    mountainTops(); //Add terrain
     cloudFloat();  //Add clounds
     
     worldOrientation();

@@ -95,9 +95,14 @@ void enemyMode() {
         if (searchForPlayer()) {
             /*Face the player*/
             orient = followPlayer();
-            printf("face player done function orient %f\n", orient);
             setPlayerPosition(enemy.id, x, y, z, (float)orient);
         }
+        else if (lostPlayerCountDown()) {
+            enemy.mode = 0;
+        }
+    }
+    else if (enemy.mode == 2) {    //Run away
+        
     }
 }
 
@@ -114,7 +119,7 @@ void updateEnemy() {
     
     /*****Search mode******/
     /*Determine if the enemy can move in that direction*/
-    //predictEnemyMove();
+    predictEnemyMove();
     
     
     /*Update the enemy position in the game world*/
@@ -727,7 +732,7 @@ void enemyFireProj(float x, float y, float z, float dx, float dz) {
         
         /*Get the speed*/
         speed = (fabsf(dx) + fabsf(dz)) / 2;
-        printf("fabsf(dx), fabsf(dz), speed = %f,%f,%f\n", fabsf(dx),fabsf(dz),speed);
+        //printf("fabsf(dx), fabsf(dz), speed = %f,%f,%f\n", fabsf(dx),fabsf(dz),speed);
     
         /*Determine the angle to fire*/
         angle = 45.0;
@@ -799,6 +804,43 @@ int fireTimer() {
     return 0;   //Don't update the function
 }
 
+/*Count down to when the AI should start searching for player again*/
+int lostPlayerCountDown() {
+    static clock_t updateStart;
+    clock_t updateEnd;
+    static int resetTime = 1;
+    int milsec = 10000; //Milliseconds;
+    double diff;
+    
+    struct timeval  tv;
+    double time_in_mill;
+    
+    gettimeofday(&tv, NULL);
+    /*Determine if the timer has been set*/
+    if (resetTime == 1) {
+        /*Reset the timer*/
+        resetTime = 0;
+        
+        time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+        
+        updateStart = time_in_mill;
+        
+    }
+    else if (resetTime == 0) {
+        /*Determine if 0.08 second has passed*/
+        time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; // convert tv_sec & tv_usec to millisecond
+        
+        updateEnd = time_in_mill;
+        diff = ((updateEnd - updateStart));
+        
+        if (diff >= 9000) {
+            resetTime = 1;  //Reset the timer
+            return 1;   //3Seconds have elapsed
+        }
+    }
+    
+    return 0;   //Don't update the function
+}
 
 int followPlayer() {
     float hypot, oriAngle;
@@ -822,10 +864,7 @@ int followPlayer() {
     
     /*Determine the orientation/quadrand of where the player is*/
     oriAngle = asin(z/hypot) * 180.0f / M_PI;
-    
-    
-    
-    
+           
     
     orient = enemyQuad() -  oriAngle;
     
@@ -836,7 +875,7 @@ int followPlayer() {
         orient = 90 + oriAngle;
     }
     
-    printf("oriangle, orient,EnemyFaceOpponent, enemyQuad = %f,%d,%d,%d,%f,%f,%f \n", oriAngle, orient, EnemyFaceOpponent(), enemyQuad(), (oriAngle+EnemyFaceOpponent()-180), enemy.dx, enemy.dz);
+    //printf("oriangle, orient,EnemyFaceOpponent, enemyQuad = %f,%d,%d,%d,%f,%f,%f \n", oriAngle, orient, EnemyFaceOpponent(), enemyQuad(), (oriAngle+EnemyFaceOpponent()-180), enemy.dx, enemy.dz);
         
     
     return orient;
@@ -860,22 +899,22 @@ int enemyQuad() {
     /*Return the quadrant based on the quadrant*/
     if (px < ex && pz <= ez) {   //Quadrant 4
         enemy.dx = -0.1;
-        enemy.dz = 0;
+        //enemy.dz = 0;
         return 270;
     }
     else if (px <= ex && pz > ez) {  //Quadrant 3
         enemy.dz = 0.1;
-        enemy.dx = 0;
+        //enemy.dx = 0;
         return 360;
     }
     else if (px > ex && pz >= ez) {  //Quadrant 2
         enemy.dx = 0.1;
-        enemy.dz = 0;
+        //enemy.dz = 0;
         return 90;
     }
     else if (px >= ex && pz < ez) {  //Quadrant 1
         enemy.dz = -0.1;
-        enemy.dx = 0;
+        //enemy.dx = 0;
         return 180;
     }
 }
