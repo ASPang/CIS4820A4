@@ -11,9 +11,6 @@
  * 0 = search mode
  * 1 = fight mode
  */
-//int eMode = 0;
-//int eNum = 1;   //Enemy number
-
 struct enemyStruct {
     float dx;
     float dy;
